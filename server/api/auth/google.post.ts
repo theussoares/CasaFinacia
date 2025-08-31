@@ -1,56 +1,43 @@
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { setupFirebase } from '../../utils/firebase';
-import { v4 as uuidv4 } from 'uuid';
 
 export default defineEventHandler(async (event) => {
     setupFirebase();
+    const { idToken, inviteToken } = await readBody(event);
+    if (!idToken) throw createError({ statusCode: 400, statusMessage: 'Missing idToken' });
+
     const auth = getAuth();
     const db = getFirestore();
-
-    const { idToken, inviteToken } = await readBody(event);
-    if (!idToken) {
-        throw createError({ statusCode: 400, statusMessage: 'Missing idToken' });
-    }
-
     const decodedToken = await auth.verifyIdToken(idToken);
     const { uid, email, name, picture } = decodedToken;
 
     const userRef = db.collection('users').doc(uid);
-    const userSnap = await userRef.get();
-    let householdId: string | null = null;
-
-    if (userSnap.exists) {
-        householdId = userSnap.data()?.householdId || null;
-    } else if (inviteToken) {
-        // New user with an invite token: find the household and join it.
-        const householdQuery = await db.collection('households').where('inviteToken', '==', inviteToken).limit(1).get();
-        if (!householdQuery.empty) {
-            const householdDoc = householdQuery.docs[0];
-            householdId = householdDoc.id;
-
-            await userRef.set({ email, name, photoURL: picture, householdId });
-            // SEC-01: Invalidate the invite token after use
-            await householdDoc.ref.update({ inviteToken: FieldValue.delete() });
+    let userSnap = await userRef.get();
+    if (!userSnap.exists) {
+        let householdId: string;
+        if (inviteToken) {
+            const householdQuery = await db.collection('households').where('inviteToken', '==', inviteToken).limit(1).get();
+            if (!householdQuery.empty) {
+                const householdDoc = householdQuery.docs[0];
+                householdId = householdDoc.id;
+                await householdDoc.ref.update({ inviteToken: FieldValue.delete() });
+            } else { throw createError({ statusCode: 400, statusMessage: 'Invalid invite token' }); }
+        } else {
+            const newHouseholdRef = await db.collection('households').add({ owner: uid, createdAt: new Date() });
+            householdId = newHouseholdRef.id;
         }
-    }
-
-    if (!householdId) {
-        // New user without an invite token: create a new household.
-        const newHouseholdRef = db.collection('households').doc();
-        await newHouseholdRef.set({ owner: uid, createdAt: new Date() });
-        householdId = newHouseholdRef.id;
         await userRef.set({ email, name, photoURL: picture, householdId });
+        userSnap = await userRef.get();
     }
 
-    // SEC-03: Create a custom token for session management and set it as a secure, HttpOnly cookie.
-    const customToken = await auth.createCustomToken(uid);
-    setCookie(event, 'auth-token', customToken, {
+    // **AÇÃO CRÍTICA:** Definir o token de ID como um cookie HttpOnly seguro.
+    setCookie(event, 'auth-token', idToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7 // 1 week
+        maxAge: 60 * 60 * 24 * 7, // 7 dias
     });
 
-    return { uid, email, name, photoURL: picture };
+    return { uid, ...userSnap.data() };
 });

@@ -40,5 +40,6 @@ useSeoMeta({
 body {
   font-family: 'Inter', sans-serif;
   background-color: #fdf2f8; /* Fundo rosa bem clarinho para um toque delicado */
+  padding: 0 !important;
 }
 </style>
