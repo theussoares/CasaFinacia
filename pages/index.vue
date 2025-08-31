@@ -212,7 +212,7 @@
             Tirando suas dúvidas
           </h2>
           <p class="text-gray-600 text-center mb-12">
-            Respostas para as perguntas mais comuns sobre o CasaFinacia.
+            Respostas para as perguntas mais comuns sobre o Planejando a Dois.
           </p>
 
           <AccordionRoot
@@ -225,7 +225,7 @@
                 <AccordionTrigger
                   class="w-full p-6 flex justify-between items-center text-left font-semibold text-gray-800 hover:bg-gray-50"
                 >
-                  <span>O CasaFinacia é gratuito?</span>
+                  <span>O Planejando a Dois é gratuito?</span>
                   <svg
                     class="w-5 h-5 transition-transform duration-300"
                     :class="{ 'rotate-180': openAccordion === 'item-1' }"
@@ -244,7 +244,7 @@
               </AccordionHeader>
               <AccordionContent class="p-6 pt-0 text-gray-600">
                 Sim! Nossa missão é ajudar casais a começarem a vida juntos com
-                o pé direito. O CasaFinacia é 100% gratuito.
+                o pé direito. O Planejando a Dois é 100% gratuito.
               </AccordionContent>
             </AccordionItem>
           </AccordionRoot>
@@ -255,7 +255,7 @@
     <footer class="bg-stone-100">
       <div class="container mx-auto py-6 px-6 text-center text-gray-600">
         <p>
-          &copy; {{ new Date().getFullYear() }} CasaFinacia. Todos os direitos
+          &copy; {{ new Date().getFullYear() }} Planejando a Dois. Todos os direitos
           reservados.
         </p>
       </div>
