@@ -1,6 +1,17 @@
 // middleware/auth.ts
+// This middleware now protects pages, assuming a session is established by a cookie.
 export default defineNuxtRouteMiddleware((to, from) => {
-    // Lógica de verificação de usuário (exemplo com Pinia)
-    // Você precisará implementar a lógica real no seu store de autenticação.
-    const isAuthenticated = false // Substitua por: useAuthStore().isAuthenticated
-})
+    if (process.server) return;
+
+    const token = useCookie('auth-token');
+
+    // If trying to access a protected page without a token, redirect to login.
+    if (!token.value && to.path !== '/') {
+        return navigateTo('/');
+    }
+
+    // If on the login page with a token, redirect to home.
+    if (token.value && to.path === '/') {
+        return navigateTo('/home');
+    }
+});

@@ -17,22 +17,21 @@
 
 <script lang="ts" setup>
 import { signInWithPopup } from 'firebase/auth';
-import { useNuxtApp } from '#app';
-import { useSessionStore } from '~/stores/session';
-import { useRouter } from 'vue-router';
-import { ref } from 'vue';
+
 
 const loading = ref(false);
 const error = ref<string | null>(null);
-const store = useSessionStore();
-const router = useRouter();
+const { $firebase } = useNuxtApp() as any;
+
+// Handle invite token from URL
+const route = useRoute();
+const inviteToken = ref(route.query.invite_token || null);
 
 
 type FirebaseHelpers = {
   getFirebaseAuth: () => import('firebase/auth').Auth;
   getGoogleProvider: () => import('firebase/auth').GoogleAuthProvider;
 };
-const { $firebase } = useNuxtApp();
 const firebase = $firebase as FirebaseHelpers;
 
 async function loginWithGoogle() {
@@ -44,22 +43,12 @@ async function loginWithGoogle() {
   const result = await signInWithPopup(auth, provider);
     const idToken = await result.user.getIdToken();
     // Call backend to get invite token and user info
-    const res = await fetch('/api/auth/google', {
+    await $fetch('/api/auth/google', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken }),
+      body: { idToken, inviteToken: inviteToken.value }
     });
-    if (!res.ok) throw new Error('Falha ao autenticar.');
-    const data = await res.json();
-    store.setUser({
-      uid: data.uid,
-      email: data.email,
-      name: data.name,
-      photoURL: data.photoURL,
-      token: data.token,
-    });
-  // Redirect to home
-  router.push('/home');
+    
+    await navigateTo('/home');
   } catch (e: any) {
     error.value = e.message || 'Erro desconhecido.';
   } finally {

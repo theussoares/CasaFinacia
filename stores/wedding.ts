@@ -46,7 +46,7 @@ export const useWeddingStore = defineStore('wedding', {
 
         // ✅ REFACTORED: No longer uses `(this as any)`. It now uses other getters,
         // which Pinia makes available on `this` with correct typing.
-        monthlySaving(): number {
+        monthlySaving(state): number {
             const remainingAmount = this.totalGoal - this.totalSaved;
             if (remainingAmount <= 0 || this.monthsLeft <= 0) {
                 return 0;
@@ -64,7 +64,7 @@ export const useWeddingStore = defineStore('wedding', {
                 // Run both fetches in parallel for better performance
                 await Promise.all([this.fetchSafes(), this.fetchWeddingDate()]);
             } catch (e: any) {
-                this.error = "Failed to initialize application data.";
+                this.error = "Falha ao inicializar os dados da aplicação.";
             } finally {
                 this.loading = false;
             }
@@ -157,7 +157,7 @@ export const useWeddingStore = defineStore('wedding', {
             this.loading = false;
         },
 
-    async createSafe(newSafe: { name: string; goal: number }) {
+        async createSafe(newSafe: { name: string; goal: number }) {
             this.loading = true;
             try {
                 const { data, error } = await useFetch('/api/safes', {
