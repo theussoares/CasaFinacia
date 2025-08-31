@@ -5,8 +5,8 @@
   >
     <div class="h-20 flex items-center justify-between px-4 border-b border-rose-100 flex-shrink-0">
       <NuxtLink to="/home" class="flex items-center gap-2">
-        <NuxtImg src="/apple-touch-icon.png" alt="Logo CasaFinacia" width="32" height="32" />
-        <span class="font-bold text-lg text-gray-800">CasaFinacia</span>
+        <NuxtImg src="/apple-touch-icon.png" alt="Logo Planejando a Dois" width="32" height="32" />
+        <span class="font-bold text-lg text-gray-800">Planejando a Dois</span>
       </NuxtLink>
       <button @click="emit('close')" class="p-2 rounded-md text-gray-500 hover:bg-rose-100 hover:text-pink-600">
          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>

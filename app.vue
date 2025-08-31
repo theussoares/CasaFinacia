@@ -25,8 +25,8 @@ useHead({
 
 // useSeoMeta cuida das tags de SEO e de compartilhamento em redes sociais
 useSeoMeta({
-  title: 'CasaFinacia | Planejador Financeiro para Casamentos',
-  ogTitle: 'CasaFinacia | Seu Casamento Organizado',
+  title: 'Planejando a dois | Planejador Financeiro para Casamentos',
+  ogTitle: 'Planejando a dois | Seu Casamento Organizado',
   description: 'Acompanhe e organize as economias para o grande dia! Crie metas, distribua valores e veja seu sonho se realizar.',
   ogDescription: 'A ferramenta completa para organizar as finanças do seu casamento.',
   // SEO: A URL da imagem é dinâmica e absoluta, essencial para redes sociais.

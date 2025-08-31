@@ -6,7 +6,7 @@
         
         <div v-if="step === 1" class="text-center">
           <DialogTitle class="text-2xl font-serif font-bold text-pink-700 mb-4">
-            Bem-vindos ao CasaFinacia!
+            Bem-vindos ao Planejando a Dois!
           </DialogTitle>
           <DialogDescription class="text-gray-600 mb-6">
             Vamos começar a planejar o casamento dos seus sonhos em apenas 3 passos rápidos.
