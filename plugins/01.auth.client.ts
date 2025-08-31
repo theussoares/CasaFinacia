@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { useSessionStore } from '~/stores/session';
 
 export default defineNuxtPlugin(async (nuxtApp) => {
@@ -24,34 +24,18 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         getGoogleProvider: () => new GoogleAuthProvider()
     });
 
-    // 3. Ouve CONTINUAMENTE as mudanças de estado de autenticação
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            // Se o utilizador fez login (ou já estava logado),
-            // sincronizamos o nosso estado interno com o backend.
-            try {
-                const { user: appUser } = await $fetch('/api/auth/me');
-                sessionStore.setUser(appUser);
-            } catch (e) {
-                console.error("Failed to fetch user data from /api/auth/me", e);
-                sessionStore.setUser(null);
-            }
-        } else {
-            // Se o utilizador fez logout ou não está logado.
+    // 3. No arranque da aplicação, tenta obter a sessão a partir do cookie do servidor.
+    // Isto trata dos casos de F5 na página ou de acesso direto a uma rota protegida.
+    if (process.client) {
+        try {
+            const { user } = await $fetch('/api/auth/me');
+            sessionStore.setUser(user);
+        } catch (e) {
+            console.error("Could not fetch initial session.", e);
             sessionStore.setUser(null);
         }
+    }
 
-        // Se a verificação inicial ainda não tinha terminado, marca-a como pronta.
-        if (!sessionStore.isAuthReady) {
-            sessionStore.setAuthReady();
-        }
-    });
-
-    // Aguarda apenas a primeira execução do listener para desbloquear a app
-    await new Promise<void>(resolve => {
-        const unsubscribe = onAuthStateChanged(auth, () => {
-            unsubscribe();
-            resolve();
-        });
-    });
+    // 4. Sinaliza que a verificação inicial terminou.
+    sessionStore.setAuthReady();
 });
