@@ -1,22 +1,22 @@
 <template>
   <section class="bg-white p-6 rounded-xl shadow-md mb-6">
     <h2 class="text-2xl font-bold text-stone-700 text-center mb-4">Resumo Geral</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+    <div class="grid grid-cols-2 gap-4 text-center">
       <div>
         <h3 class="text-sm font-medium text-stone-500">Meta Total</h3>
-        <span class="text-2xl font-bold text-stone-800">{{ formatCurrency(store.totalGoal) }}</span>
+        <span class="text-xl md:!text-2xl font-bold text-stone-800">{{ formatCurrency(store.totalGoal) }}</span>
       </div>
       <div>
         <h3 class="text-sm font-medium text-stone-500">Total Guardado</h3>
-        <span class="text-2xl font-bold text-stone-800">{{ formatCurrency(store.totalSaved) }}</span>
+        <span class="text-xl md:!text-2xl font-bold text-stone-800">{{ formatCurrency(store.totalSaved) }}</span>
       </div>
       <div>
         <h3 class="text-sm font-medium text-stone-500">Meses Restantes</h3>
-        <span class="text-2xl font-bold text-stone-800">{{ store.monthsLeft }}</span>
+        <span class="text-xl md:!text-2xl font-bold text-stone-800">{{ store.monthsLeft }}</span>
       </div>
       <div>
         <h3 class="text-sm font-medium text-stone-500">Guardar por Mês</h3>
-        <span class="text-2xl font-bold text-green-700">{{ formatCurrency(store.monthlySaving) }}</span>
+        <span class="text-xl md:!text-2xl font-bold text-green-700">{{ formatCurrency(store.monthlySaving) }}</span>
       </div>
     </div>
     <div class="mt-6 flex flex-col items-center">
