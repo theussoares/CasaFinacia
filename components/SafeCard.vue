@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrency } from '~/composables/useCurrency';
+import { useCurrency } from '~~/composables/useCurrency';
 import { useWeddingStore } from '~/stores/wedding';
 
 // It's good practice to define complex prop types.
