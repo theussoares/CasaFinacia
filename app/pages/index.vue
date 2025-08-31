@@ -52,12 +52,12 @@ watch(weddingDate, (newDate) => {
     }
 });
 
-useSeoMeta({
-  title: 'Nosso Casamento | Planejador Financeiro',
-  ogTitle: 'Nosso Casamento | Planejador Financeiro',
-  description: 'Acompanhe e organize as economias para o grande dia! Calcule metas, distribua valores e veja seu sonho se realizar.',
-  ogDescription: 'Acompanhe e organize as economias para o grande dia!',
-  ogImage: `${config.public.siteUrl}/android-chrome-512x512.png`,
-  twitterCard: 'summary_large_image',
-})
+// useSeoMeta({
+//   title: 'Nosso Casamento | Planejador Financeiro',
+//   ogTitle: 'Nosso Casamento | Planejador Financeiro',
+//   description: 'Acompanhe e organize as economias para o grande dia! Calcule metas, distribua valores e veja seu sonho se realizar.',
+//   ogDescription: 'Acompanhe e organize as economias para o grande dia!',
+//   ogImage: `${config.public.siteUrl}/android-chrome-512x512.png`,
+//   twitterCard: 'summary_large_image',
+// })
 </script>
