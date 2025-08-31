@@ -13,10 +13,10 @@
     "@pinia/nuxt": "^0.11.2",
     "firebase": "^12.2.1",
     "firebase-admin": "^13.5.0",
-    "nuxt": "^3.17.3",
     "radix-vue": "^1.9.17",
-    "vue": "^3.5.20",
-    "vue-router": "^4.5.1"
+    "vue": "^3.5.12",
+  "vue-router": "^4.5.1",
+  "nuxt": "3.18.1"
   },
   "packageManager": "pnpm@10.15.0+sha512.486ebc259d3e999a4e8691ce03b5cac4a71cbeca39372a9b762cb500cfdf0873e2cb16abe3d951b1ee2cf012503f027b98b6584e4df22524e0c7450d9ec7aa7b",
   "devDependencies": {
