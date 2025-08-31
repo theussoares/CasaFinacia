@@ -13,6 +13,7 @@
             : "Não encontramos o que você está procurando"
         }}
         {{ error }}
+        {{  error.stack }}
       </h2>
       <button
         class="bg-[#4D7C0F] hover:opacity-80 font-inter px-6 h-12 text-white rounded-md justify-center items-center font-medium"
