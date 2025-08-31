@@ -17,53 +17,41 @@
 
 <script lang="ts" setup>
 import { signInWithPopup } from 'firebase/auth';
-import { useNuxtApp } from '#app';
-import { useSessionStore } from '~/stores/session';
-import { useRouter } from 'vue-router';
-import { ref } from 'vue';
 
 const loading = ref(false);
 const error = ref<string | null>(null);
-const store = useSessionStore();
-const router = useRouter();
+const { $firebase } = useNuxtApp() as any;
 
-
-type FirebaseHelpers = {
-  getFirebaseAuth: () => import('firebase/auth').Auth;
-  getGoogleProvider: () => import('firebase/auth').GoogleAuthProvider;
-};
-const { $firebase } = useNuxtApp();
-const firebase = $firebase as FirebaseHelpers;
+const route = useRoute();
+const inviteToken = ref(route.query.invite_token || null);
 
 async function loginWithGoogle() {
   loading.value = true;
   error.value = null;
   try {
-  const auth = firebase.getFirebaseAuth();
-  const provider = firebase.getGoogleProvider();
-  const result = await signInWithPopup(auth, provider);
+    const auth = $firebase.getFirebaseAuth();
+    const provider = $firebase.getGoogleProvider();
+    
+    // 1. Inicia o pop-up de login do Google.
+    const result = await signInWithPopup(auth, provider);
     const idToken = await result.user.getIdToken();
-    // Call backend to get invite token and user info
-    const res = await fetch('/api/auth/google', {
+
+    // 2. Envia o token para o backend. O backend irá criar o utilizador,
+    // associá-lo ao agregado familiar (se houver um inviteToken) e definir o cookie de sessão.
+    await $fetch('/api/auth/google', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken }),
+      body: { idToken, inviteToken: inviteToken.value },
     });
-    if (!res.ok) throw new Error('Falha ao autenticar.');
-    const data = await res.json();
-    store.setUser({
-      uid: data.uid,
-      email: data.email,
-      name: data.name,
-      photoURL: data.photoURL,
-      token: data.token,
-    });
-  // Redirect to home
-  router.push('/home');
+    
+    // 3. NÃO FAZEMOS MAIS NADA AQUI.
+    // O plugin '01.auth.client.ts' irá detetar a mudança de estado de autenticação
+    // e o middleware 'auth.global.ts' irá tratar do redirecionamento.
+    // O estado de 'loading' continuará até que a página seja redirecionada.
+
   } catch (e: any) {
-    error.value = e.message || 'Erro desconhecido.';
-  } finally {
-    loading.value = false;
+    console.error("Login failed:", e);
+    error.value = e.data?.statusMessage || e.message || 'Erro desconhecido ao tentar fazer login.';
+    loading.value = false; // Em caso de erro, paramos o loading.
   }
 }
 </script>

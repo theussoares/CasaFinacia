@@ -3,16 +3,16 @@
     <div 
       v-if="isSidebarOpen" 
       @click="isSidebarOpen = false"
-      class="fixed inset-0 bg-black/30 z-30"
+      class="fixed inset-0 bg-black/40 z-30 md:hidden"
+      aria-hidden="true"
     />
-
-    <!-- <DashboardSidebar :is-open="isSidebarOpen" @close="isSidebarOpen = false" /> -->
     
-    <div class="flex-1 flex flex-col">
+    <div class="flex flex-col flex-1">
       <DashboardHeader @open-sidebar="isSidebarOpen = true" />
-      <div class="flex-1 overflow-x-hidden overflow-y-auto">
+      
+      <main class="py-2 flex flex-col">
         <slot />
-      </div>
+      </main>
     </div>
   </div>
 </template>

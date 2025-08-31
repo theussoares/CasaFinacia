@@ -6,6 +6,9 @@
           <!-- <button @click="emit('openSidebar')" class="p-2 rounded-md text-gray-500 hover:bg-rose-100 hover:text-pink-600">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
           </button> -->
+          <!-- <button @click="emit('openSidebar')" class="p-2 rounded-md text-gray-500 hover:bg-rose-100 hover:text-pink-600 md:hidden">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button> -->
           <div class="flex items-center gap-2">
             <span class="text-gray-700 font-medium">
                 Olá <b class="text-rose-500">{{ session.user && session.user.name ? session.user.name.split(' ')[0] : 'Usuário' }}</b>
@@ -93,23 +96,29 @@ import {
 const emit = defineEmits(['openSidebar']);
 
 const session = useSessionStore();
-const router = useRouter();
 const copied = ref(false);
 
-function logout() {
-  session.clearUser();
-  router.push('/');
+// Ação de logout corrigida para usar a store, que chama o endpoint da API
+async function logout() {
+  await session.logout();
 }
 
+// Ação de partilha corrigida para chamar o endpoint correto da API
 async function shareInvite() {
-  if (!session.user?.token) return;
-  const url = `${window.location.origin}/?token=${session.user.token}`;
+  copied.value = false;
   try {
-    await navigator.clipboard.writeText(url);
+    // SEC-03: Chama o endpoint seguro para gerar um link de convite.
+    const { inviteUrl } = await $fetch('/api/household/invite', {
+      method: 'POST',
+    });
+    
+    await navigator.clipboard.writeText(inviteUrl);
     copied.value = true;
-    setTimeout(() => (copied.value = false), 2000);
-  } catch (e) {
-    alert('Não foi possível copiar o link.');
+    setTimeout(() => (copied.value = false), 2500);
+  } catch (error: any) {
+    console.error("Falha ao gerar o link de convite:", error);
+    // Fornece feedback claro ao utilizador
+    alert(`Não foi possível gerar o link de convite: ${error.data?.statusMessage || 'Erro de comunicação com o servidor.'}`);
   }
 }
 </script>

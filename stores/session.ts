@@ -1,43 +1,35 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { getAuth, signOut } from 'firebase/auth';
 
 type User = {
-  uid: string;
-  email: string;
-  name: string;
-  photoURL: string;
-  token: string;
+    uid: string;
+    email: string;
+    name: string;
+    photoURL: string;
+    householdId: string;
 };
 
 export const useSessionStore = defineStore('session', () => {
-  const user = ref<User | null>(null);
-  const loading = ref(false);
+    const user = ref<User | null>(null);
+    const isAuthReady = ref(false); // Flag para controlar o estado de "loading"
 
-  // Restaura usuário do localStorage ao iniciar
-  if (import.meta.client && !user.value) {
-    const saved = localStorage.getItem('user');
-    if (saved) {
-      try {
-        user.value = JSON.parse(saved);
-      } catch {}
+    function setUser(newUser: User | null) {
+        user.value = newUser;
     }
-  }
 
-  function setUser(u: User) {
-    user.value = u;
-    if (import.meta.client) {
-      localStorage.setItem('invite_token', u.token);
-      localStorage.setItem('user', JSON.stringify(u));
+    function setAuthReady() {
+        isAuthReady.value = true;
     }
-  }
 
-  function clearUser() {
-    user.value = null;
-    if (import.meta.client) {
-      localStorage.removeItem('invite_token');
-      localStorage.removeItem('user');
+    async function logout() {
+        const { $firebase } = useNuxtApp() as any;
+        // Limpa o cookie do servidor
+        await $fetch('/api/auth/logout', { method: 'POST' });
+        // Faz logout do Firebase no cliente
+        await signOut($firebase.getFirebaseAuth());
+        setUser(null);
+        await navigateTo('/');
     }
-  }
 
-  return { user, loading, setUser, clearUser };
+    return { user, isAuthReady, setUser, setAuthReady, logout };
 });
