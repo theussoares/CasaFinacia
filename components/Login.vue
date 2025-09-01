@@ -26,7 +26,7 @@ const route = useRoute();
 const inviteToken = ref(route.query.invite_token || null);
 
 // AÇÃO CRÍTICA: Guardar o token de convite no localStorage para que ele sobreviva ao redirecionamento do Google
-if (inviteToken.value && typeof inviteToken.value === 'string') {
+if (inviteToken.value && typeof inviteToken.value === 'string' && import.meta.client) {
   localStorage.setItem('invite_token', inviteToken.value);
 }
 
