@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { useSessionStore } from '~/stores/session';
 
 export default defineNuxtPlugin(async (nuxtApp) => {
@@ -18,41 +18,24 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
     const auth = getAuth(firebaseApp);
 
-    // 2. Fornece os helpers para a aplicação
+    // 2. Fornece os helpers para o resto da aplicação
     nuxtApp.provide('firebase', {
         getFirebaseAuth: () => auth,
         getGoogleProvider: () => new GoogleAuthProvider()
     });
 
-    // 3. Ouve as mudanças de estado de autenticação e atualiza a store
-    onAuthStateChanged(auth, async (user) => {
-        // Se o estado do Firebase e o da nossa store não estiverem sincronizados, sincronizamo-los.
-        if (user && !sessionStore.user) {
-            try {
-                // O endpoint /api/auth/me lê o cookie e obtém os dados completos do utilizador
-                const { user: appUser } = await $fetch('/api/auth/me');
-                sessionStore.setUser(appUser);
-            } catch (e) {
-                console.error("Falha ao obter dados do utilizador após mudança de estado.", e);
-                sessionStore.setUser(null);
-            }
-        } else if (!user && sessionStore.user) {
+    // 3. No arranque da aplicação, tenta obter a sessão a partir do cookie do servidor.
+    // Isto trata dos casos de F5 na página ou de acesso direto a uma rota protegida.
+    if (!sessionStore.user) { // Apenas executa se a store ainda não tiver sido preenchida
+        try {
+            const { user } = await $fetch('/api/auth/me');
+            sessionStore.setUser(user);
+        } catch (e) {
+            // É normal falhar se não houver sessão, não é um erro crítico.
             sessionStore.setUser(null);
         }
+    }
 
-        // Se a verificação inicial ainda não terminou, marca-a como pronta.
-        if (!sessionStore.isAuthReady) {
-            sessionStore.setAuthReady();
-        }
-    });
-
-    // 4. Aguarda APENAS a verificação inicial antes de desbloquear a aplicação
-    await new Promise<void>(resolve => {
-        const unsubscribe = onAuthStateChanged(auth, () => {
-            // Este listener temporário corre uma vez, resolve a promise e desliga-se.
-            // O listener principal (acima) continua a funcionar.
-            unsubscribe();
-            resolve();
-        });
-    });
+    // 4. Sinaliza que a verificação inicial terminou, permitindo que o middleware e a UI reajam.
+    sessionStore.setAuthReady();
 });

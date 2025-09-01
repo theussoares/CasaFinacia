@@ -17,10 +17,12 @@
 
 <script lang="ts" setup>
 import { signInWithPopup } from 'firebase/auth';
+import { useSessionStore } from '~/stores/session';
 
 const loading = ref(false);
 const error = ref<string | null>(null);
 const { $firebase } = useNuxtApp() as any;
+const sessionStore = useSessionStore();
 
 const route = useRoute();
 const inviteToken = ref(route.query.invite_token || null);
@@ -32,24 +34,31 @@ async function loginWithGoogle() {
     const auth = $firebase.getFirebaseAuth();
     const provider = $firebase.getGoogleProvider();
     
-    // 1. Inicia o pop-up de login do Google
+    // 1. Inicia o pop-up de login do Google.
     const result = await signInWithPopup(auth, provider);
     const idToken = await result.user.getIdToken();
 
-    // 2. Envia o token para o backend para criar a sessão (cookie)
-    await $fetch('/api/auth/google', {
+    // 2. Envia o token para o backend. O backend cria o utilizador na DB,
+    // define o cookie de sessão e retorna os dados do utilizador.
+    const userData = await $fetch('/api/auth/google', {
       method: 'POST',
       body: { idToken, inviteToken: inviteToken.value },
     });
     
-    // 3. FIM. O listener 'onAuthStateChanged' no plugin irá agora
-    // detetar esta mudança e tratar de tudo (atualizar a store e acionar o redirecionamento).
+    // 3. Atualiza a store do Pinia localmente. Isto é crucial para que
+    // o middleware permita a passagem imediata.
+    sessionStore.setUser(userData as any);
+    
+    // 4. Navega para a página principal da aplicação.
+    await navigateTo('/home');
 
   } catch (e: any) {
     console.error("Login failed:", e);
     error.value = e.data?.statusMessage || e.message || 'Erro desconhecido ao tentar fazer login.';
-    loading.value = false; // Importante para parar o loading em caso de erro.
+  } finally {
+    // 5. Garante que o estado de 'loading' é desativado, quer a operação
+    // tenha sucesso ou falhe. Isto resolve o problema do "loading infinito".
+    loading.value = false; 
   }
-  // Não redefinimos o loading para false aqui, pois o redirecionamento irá destruir este componente.
 }
 </script>
