@@ -16,16 +16,19 @@
 </template>
 
 <script lang="ts" setup>
-import { signInWithPopup } from 'firebase/auth';
-import { useSessionStore } from '~/stores/session';
+import { signInWithRedirect, GoogleAuthProvider } from 'firebase/auth';
 
 const loading = ref(false);
 const error = ref<string | null>(null);
 const { $firebase } = useNuxtApp() as any;
-const sessionStore = useSessionStore();
 
 const route = useRoute();
 const inviteToken = ref(route.query.invite_token || null);
+
+// AÇÃO CRÍTICA: Guardar o token de convite no localStorage para que ele sobreviva ao redirecionamento do Google
+if (inviteToken.value && typeof inviteToken.value === 'string') {
+  localStorage.setItem('invite_token', inviteToken.value);
+}
 
 async function loginWithGoogle() {
   loading.value = true;
@@ -33,30 +36,13 @@ async function loginWithGoogle() {
   try {
     const auth = $firebase.getFirebaseAuth();
     const provider = $firebase.getGoogleProvider();
-
-    // 1. Inicia o pop-up de login do Google.
-    const result = await signInWithPopup(auth, provider);
-    const idToken = await result.user.getIdToken();
-
-    // 2. Envia o token para o backend para criar a sessão (cookie) e o utilizador na DB.
-    const userData = await $fetch('/api/auth/google', {
-      method: 'POST',
-      body: { idToken, inviteToken: inviteToken.value },
-    });
     
-    // 3. Atualiza a store do Pinia localmente para uma reação imediata da UI.
-    sessionStore.setUser(userData as any);
-    
-    // 4. Navega explicitamente para a página principal.
-    // O middleware irá permitir a passagem porque a store já está preenchida.
-    await navigateTo('/home');
+    // Inicia o fluxo de redirecionamento. A execução do código aqui para.
+    await signInWithRedirect(auth, provider);
 
   } catch (e: any) {
-    console.error("Login failed:", e);
-    error.value = e.data?.statusMessage || e.message || 'Erro desconhecido ao tentar fazer login.';
-  } finally {
-    // 5. Garante que o estado de 'loading' é desativado, quer a operação
-    // tenha sucesso ou falhe, resolvendo o "loading infinito".
+    console.error("A iniciação do login por redirecionamento falhou:", e);
+    error.value = e.data?.statusMessage || e.message || 'Não foi possível iniciar o login.';
     loading.value = false;
   }
 }

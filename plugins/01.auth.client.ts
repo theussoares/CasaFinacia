@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, getRedirectResult } from 'firebase/auth';
 import { useSessionStore } from '~/stores/session';
 
 export default defineNuxtPlugin(async (nuxtApp) => {
@@ -24,18 +24,41 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         getGoogleProvider: () => new GoogleAuthProvider()
     });
 
-    // 3. No arranque da aplicação, tenta obter a sessão a partir do cookie do servidor.
-    // Isto trata dos casos de F5 na página ou de acesso direto a uma rota protegida.
-    if (process.client) {
+    // 3. Tenta processar o resultado de um login por redirecionamento
+    try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+            // Se houver um resultado, o utilizador acabou de fazer login.
+            const idToken = await result.user.getIdToken();
+            const inviteToken = localStorage.getItem('invite_token');
+
+            // ESTA É A CHAMADA ÚNICA E AUTORITÁRIA.
+            // Ela cria o utilizador, define o cookie E retorna os dados do utilizador.
+            const userData = await $fetch('/api/auth/google', {
+                method: 'POST',
+                body: { idToken, inviteToken },
+            });
+
+            sessionStore.setUser(userData as any);
+
+            if (inviteToken) {
+                localStorage.removeItem('invite_token');
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao processar o resultado do redirecionamento:", error);
+    }
+
+    // 4. Se não houve redirecionamento, verifica a sessão existente via /api/auth/me
+    if (!sessionStore.user) {
         try {
             const { user } = await $fetch('/api/auth/me');
             sessionStore.setUser(user);
         } catch (e) {
-            console.error("Could not fetch initial session.", e);
-            sessionStore.setUser(null);
+            // É normal falhar se não houver sessão, não precisa de logar erro.
         }
     }
 
-    // 4. Sinaliza que a verificação inicial terminou.
+    // 5. Sinaliza que a autenticação está pronta
     sessionStore.setAuthReady();
 });
