@@ -5,7 +5,7 @@
         class="relative w-full min-h-screen flex items-center bg-rose-50"
       >
         <NuxtImg
-          src="/wedding-hero.png"
+          src="/wedding-hero.webp"
           class="absolute inset-0 w-full h-full object-cover"
           alt="Casal planejando seu casamento em uma mesa com um laptop."
           width="1920"
@@ -194,7 +194,7 @@
           </div>
           <div>
             <NuxtImg
-              src="/feature-dashboard.png"
+              src="/feature-dashboard.webp"
               alt="Painel do dashboard mostrando gráficos e barras de progresso"
               width="600"
               height="454"
