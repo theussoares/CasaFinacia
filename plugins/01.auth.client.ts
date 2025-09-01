@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, GoogleAuthProvider, getRedirectResult } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, GoogleAuthProvider } from 'firebase/auth';
 import { useSessionStore } from '~/stores/session';
 
 export default defineNuxtPlugin(async (nuxtApp) => {
@@ -24,41 +24,35 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         getGoogleProvider: () => new GoogleAuthProvider()
     });
 
-    // 3. Tenta processar o resultado de um login por redirecionamento
-    try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-            // Se houver um resultado, o utilizador acabou de fazer login.
-            const idToken = await result.user.getIdToken();
-            const inviteToken = localStorage.getItem('invite_token');
-
-            // ESTA É A CHAMADA ÚNICA E AUTORITÁRIA.
-            // Ela cria o utilizador, define o cookie E retorna os dados do utilizador.
-            const userData = await $fetch('/api/auth/google', {
-                method: 'POST',
-                body: { idToken, inviteToken },
-            });
-
-            sessionStore.setUser(userData as any);
-
-            if (inviteToken) {
-                localStorage.removeItem('invite_token');
+    // 3. Ouve as mudanças de estado de autenticação e atualiza a store
+    onAuthStateChanged(auth, async (user) => {
+        // Se o estado do Firebase e o da nossa store não estiverem sincronizados, sincronizamo-los.
+        if (user && !sessionStore.user) {
+            try {
+                // O endpoint /api/auth/me lê o cookie e obtém os dados completos do utilizador
+                const { user: appUser } = await $fetch('/api/auth/me');
+                sessionStore.setUser(appUser);
+            } catch (e) {
+                console.error("Falha ao obter dados do utilizador após mudança de estado.", e);
+                sessionStore.setUser(null);
             }
+        } else if (!user && sessionStore.user) {
+            sessionStore.setUser(null);
         }
-    } catch (error) {
-        console.error("Erro ao processar o resultado do redirecionamento:", error);
-    }
 
-    // 4. Se não houve redirecionamento, verifica a sessão existente via /api/auth/me
-    if (!sessionStore.user) {
-        try {
-            const { user } = await $fetch('/api/auth/me');
-            sessionStore.setUser(user);
-        } catch (e) {
-            // É normal falhar se não houver sessão, não precisa de logar erro.
+        // Se a verificação inicial ainda não terminou, marca-a como pronta.
+        if (!sessionStore.isAuthReady) {
+            sessionStore.setAuthReady();
         }
-    }
+    });
 
-    // 5. Sinaliza que a autenticação está pronta
-    sessionStore.setAuthReady();
+    // 4. Aguarda APENAS a verificação inicial antes de desbloquear a aplicação
+    await new Promise<void>(resolve => {
+        const unsubscribe = onAuthStateChanged(auth, () => {
+            // Este listener temporário corre uma vez, resolve a promise e desliga-se.
+            // O listener principal (acima) continua a funcionar.
+            unsubscribe();
+            resolve();
+        });
+    });
 });

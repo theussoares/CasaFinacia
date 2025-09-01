@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts" setup>
-import { signInWithRedirect, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithPopup } from 'firebase/auth';
 
 const loading = ref(false);
 const error = ref<string | null>(null);
@@ -25,11 +25,6 @@ const { $firebase } = useNuxtApp() as any;
 const route = useRoute();
 const inviteToken = ref(route.query.invite_token || null);
 
-// AÇÃO CRÍTICA: Guardar o token de convite no localStorage para que ele sobreviva ao redirecionamento do Google
-if (inviteToken.value && typeof inviteToken.value === 'string' && import.meta.client) {
-  localStorage.setItem('invite_token', inviteToken.value);
-}
-
 async function loginWithGoogle() {
   loading.value = true;
   error.value = null;
@@ -37,13 +32,24 @@ async function loginWithGoogle() {
     const auth = $firebase.getFirebaseAuth();
     const provider = $firebase.getGoogleProvider();
     
-    // Inicia o fluxo de redirecionamento. A execução do código aqui para.
-    await signInWithRedirect(auth, provider);
+    // 1. Inicia o pop-up de login do Google
+    const result = await signInWithPopup(auth, provider);
+    const idToken = await result.user.getIdToken();
+
+    // 2. Envia o token para o backend para criar a sessão (cookie)
+    await $fetch('/api/auth/google', {
+      method: 'POST',
+      body: { idToken, inviteToken: inviteToken.value },
+    });
+    
+    // 3. FIM. O listener 'onAuthStateChanged' no plugin irá agora
+    // detetar esta mudança e tratar de tudo (atualizar a store e acionar o redirecionamento).
 
   } catch (e: any) {
-    console.error("A iniciação do login por redirecionamento falhou:", e);
-    error.value = e.data?.statusMessage || e.message || 'Não foi possível iniciar o login.';
-    loading.value = false;
+    console.error("Login failed:", e);
+    error.value = e.data?.statusMessage || e.message || 'Erro desconhecido ao tentar fazer login.';
+    loading.value = false; // Importante para parar o loading em caso de erro.
   }
+  // Não redefinimos o loading para false aqui, pois o redirecionamento irá destruir este componente.
 }
 </script>
