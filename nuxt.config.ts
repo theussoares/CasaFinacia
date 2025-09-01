@@ -2,10 +2,21 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: true, // Mantemos o SSR para performance e SEO
+  app: {
+    head: {
+      link: [
+        // (PERF) Adiciona preconnects para os domínios críticos do Firebase
+        // Conforme recomendado pelo PageSpeed Insights para acelerar o carregamento inicial.
+        { rel: 'preconnect', href: 'https://soccer-maneger.firebaseapp.com' },
+        { rel: 'preconnect', href: 'https://www.googleapis.com' }
+      ]
+    }
+  },
   modules: [
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
     '@nuxt/image', // Módulo de imagem para otimização (PERF-01)
+    '@nuxtjs/critters'
   ],
   runtimeConfig: {
     // Variáveis disponíveis apenas no servidor (segurança)
