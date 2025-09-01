@@ -18,12 +18,13 @@
 
     <form @submit.prevent="handleAddMoney" class="flex gap-2 flex-col sm:!flex-row">
       <input 
-        v-model.number="amountToAdd"
-        type="number" 
+        v-model="amountToAdd"
+        v-numeric-only
+        type="text"
+        inputmode="decimal"
         :aria-label="`Adicionar valor para ${safe.name}`"
         placeholder="Valor" 
         class="flex-grow p-2 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-pink-400 focus:border-transparent"
-        step="0.01"
       />
       <button 
         type="submit"

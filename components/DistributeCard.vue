@@ -6,10 +6,11 @@
       <label for="distribute-amount" class="sr-only">Valor a ser distribuído</label>
       <input 
         id="distribute-amount"
-        v-model.number="amountToDistribute"
+        v-model="amountToDistribute"
+        v-numeric-only
+        inputmode="decimal"
         type="number" 
         placeholder="Ex: 500.00"
-        step="0.01"
         class="flex-grow p-3 border border-gray-300 rounded-lg text-right"
       />
       <button 
