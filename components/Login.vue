@@ -38,13 +38,12 @@ async function loginWithGoogle() {
     const auth = $firebase.getFirebaseAuth();
     const provider = $firebase.getGoogleProvider();
     
-    // Inicia o fluxo de redirecionamento. A execução do código aqui para,
-    // pois o navegador irá navegar para a página do Google.
+    // Apenas inicia o redirecionamento
     await signInWithRedirect(auth, provider);
 
   } catch (e: any) {
     console.error("A iniciação do login por redirecionamento falhou:", e);
-    error.value = e.data?.statusMessage || e.message || 'Não foi possível iniciar o login.';
+    error.value = 'Não foi possível iniciar o login.';
     loading.value = false;
   }
 }

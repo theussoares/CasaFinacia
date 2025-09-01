@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, GoogleAuthProvider, getRedirectResult } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, getRedirectResult, onAuthStateChanged } from 'firebase/auth';
 import { useSessionStore } from '~/stores/session';
 
 export default defineNuxtPlugin(async (nuxtApp) => {
@@ -24,22 +24,24 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         getGoogleProvider: () => new GoogleAuthProvider()
     });
 
-    // 3. Processa o resultado do redirecionamento do login
-    // Esta função só retorna um resultado se o utilizador acabou de ser redirecionado do Google.
+    // 3. Processa o resultado de um login por redirecionamento
     try {
         const result = await getRedirectResult(auth);
         if (result) {
+            // Se houver um resultado, o utilizador acabou de fazer login.
             const idToken = await result.user.getIdToken();
-            // Obtém o token de convite que guardámos antes do redirecionamento
             const inviteToken = localStorage.getItem('invite_token');
 
-            // Sincroniza com o backend, que irá criar o utilizador/sessão e definir o cookie
-            await $fetch('/api/auth/google', {
+            // Esta é a chamada única que sincroniza tudo: cria o utilizador,
+            // define o cookie de sessão e retorna os dados do utilizador.
+            const userData = await $fetch('/api/auth/google', {
                 method: 'POST',
                 body: { idToken, inviteToken },
             });
 
-            // Limpa o token de convite para que não seja reutilizado
+            sessionStore.setUser(userData as any);
+
+            // Limpa o token de convite para que não seja reutilizado.
             if (inviteToken) {
                 localStorage.removeItem('invite_token');
             }
@@ -48,9 +50,11 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         console.error("Erro ao processar o resultado do redirecionamento:", error);
     }
 
-    // 4. Ouve continuamente as mudanças de estado para manter a UI sincronizada
+    // 4. Ouve as mudanças de estado para manter a sessão atualizada
+    // (essencial para o logout e para a verificação inicial)
     onAuthStateChanged(auth, async (user) => {
         if (user && !sessionStore.user) {
+            // Se o utilizador está logado no Firebase mas não na nossa store, sincroniza
             try {
                 const { user: appUser } = await $fetch('/api/auth/me');
                 sessionStore.setUser(appUser);
@@ -61,12 +65,11 @@ export default defineNuxtPlugin(async (nuxtApp) => {
             sessionStore.setUser(null);
         }
 
-        if (!sessionStore.isAuthReady) {
-            sessionStore.setAuthReady();
-        }
+        // Marca a autenticação como pronta para renderizar a página
+        sessionStore.setAuthReady();
     });
 
-    // 5. Aguarda a verificação inicial antes de desbloquear a aplicação
+    // 5. Aguarda que a verificação inicial termine antes de renderizar a aplicação
     await new Promise<void>(resolve => {
         const unsubscribe = onAuthStateChanged(auth, () => {
             if (sessionStore.isAuthReady) {
