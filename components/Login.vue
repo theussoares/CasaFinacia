@@ -16,20 +16,15 @@
 </template>
 
 <script lang="ts" setup>
-import { signInWithRedirect } from 'firebase/auth';
+import { signInWithPopup } from 'firebase/auth';
+import { useSessionStore } from '~/stores/session';
+import { useRouter } from 'vue-router';
 
 const loading = ref(false);
 const error = ref<string | null>(null);
 const { $firebase } = useNuxtApp() as any;
-
-const route = useRoute();
-const inviteToken = ref(route.query.invite_token || null);
-
-// AÇÃO CRÍTICA: Guardar o token de convite no localStorage para que ele
-// sobreviva ao redirecionamento para a página do Google e de volta.
-if (inviteToken.value && typeof inviteToken.value === 'string' && import.meta.client) {
-  localStorage.setItem('invite_token', inviteToken.value);
-}
+const store = useSessionStore();
+const router = useRouter();
 
 async function loginWithGoogle() {
   loading.value = true;
@@ -37,13 +32,32 @@ async function loginWithGoogle() {
   try {
     const auth = $firebase.getFirebaseAuth();
     const provider = $firebase.getGoogleProvider();
+    const result = await signInWithPopup(auth, provider);
+    const idToken = await result.user.getIdToken();
     
-    // Apenas inicia o redirecionamento
-    await signInWithRedirect(auth, provider);
-
+    // Call backend to get invite token and user info
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken }),
+    });
+    
+    if (!res.ok) throw new Error('Falha ao autenticar.');
+    const data = await res.json();
+    
+    store.setUser({
+      uid: data.uid,
+      email: data.email,
+      name: data.name,
+      photoURL: data.photoURL,
+      token: data.token,
+    });
+    
+    // Redirect to home
+    router.push('/home');
   } catch (e: any) {
-    console.error("A iniciação do login por redirecionamento falhou:", e);
-    error.value = 'Não foi possível iniciar o login.';
+    error.value = e.message || 'Erro desconhecido.';
+  } finally {
     loading.value = false;
   }
 }
