@@ -1,7 +1,7 @@
 <template>
   <header class="bg-white border-b border-rose-100 w-full sticky top-0 z-40">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
+      <div class="flex flex-col gap-4 md:!flex-row items-center justify-between h-16">
         <!-- Avatares e Informações -->
         <div class="flex items-center gap-3">
           <div class="flex -space-x-2">
