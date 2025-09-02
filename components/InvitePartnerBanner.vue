@@ -1,6 +1,6 @@
 <template>
   <div class="bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-200 rounded-2xl p-6 mb-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-4 md:!flex-row items-center justify-between">
       <div class="flex items-center gap-4">
         <div class="bg-pink-100 p-3 rounded-full">
           <svg class="w-8 h-8 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
