@@ -212,7 +212,7 @@
             Tirando suas dúvidas
           </h2>
           <p class="text-gray-600 text-center mb-12">
-            Respostas para as perguntas mais comuns sobre o Planejando a Dois.
+            Tudo o que você precisa saber sobre nossos planos e como começar.
           </p>
 
           <AccordionRoot
@@ -220,12 +220,13 @@
             type="single"
             collapsible
           >
+            <!-- Pergunta 1: Preço -->
             <AccordionItem value="item-1" class="border-b border-gray-200">
               <AccordionHeader>
                 <AccordionTrigger
                   class="w-full p-6 flex justify-between items-center text-left font-semibold text-gray-800 hover:bg-gray-50"
                 >
-                  <span>O Planejando a Dois é gratuito?</span>
+                  <span>💰 Quanto custa o Planejando a Dois?</span>
                   <svg
                     class="w-5 h-5 transition-transform duration-300"
                     :class="{ 'rotate-180': openAccordion === 'item-1' }"
@@ -243,8 +244,176 @@
                 </AccordionTrigger>
               </AccordionHeader>
               <AccordionContent class="p-6 pt-0 text-gray-600">
-                Sim! Nossa missão é ajudar casais a começarem a vida juntos com
-                o pé direito. O Planejando a Dois é 100% gratuito.
+                <div class="space-y-3">
+                  <p class="text-lg font-semibold text-pink-600">Apenas R$ 5,00 por mês!</p>
+                  <p>Um valor super acessível para te ajudar a organizar completamente as finanças do seu casamento. Menos do que o preço de um café! ☕</p>
+                  <div class="bg-pink-50 border border-pink-200 rounded-lg p-4 mt-4">
+                    <p class="text-pink-800 font-medium">🎉 Experimente GRÁTIS por 1 dia!</p>
+                    <p class="text-pink-700 text-sm mt-1">Teste todas as funcionalidades sem compromisso.</p>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <!-- Pergunta 2: Teste Grátis -->
+            <AccordionItem value="item-2" class="border-b border-gray-200">
+              <AccordionHeader>
+                <AccordionTrigger
+                  class="w-full p-6 flex justify-between items-center text-left font-semibold text-gray-800 hover:bg-gray-50"
+                >
+                  <span>🆓 Como funciona o teste gratuito?</span>
+                  <svg
+                    class="w-5 h-5 transition-transform duration-300"
+                    :class="{ 'rotate-180': openAccordion === 'item-2' }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </AccordionTrigger>
+              </AccordionHeader>
+              <AccordionContent class="p-6 pt-0 text-gray-600">
+                <div class="space-y-3">
+                  <p>Você tem <strong>24 horas completas</strong> para testar todas as funcionalidades:</p>
+                  <ul class="list-disc list-inside space-y-2 ml-4">
+                    <li>Criar seus cofres de economia</li>
+                    <li>Definir metas financeiras</li>
+                    <li>Convidar seu parceiro(a)</li>
+                    <li>Usar o painel completo de controle</li>
+                    <li>Experimentar todas as ferramentas</li>
+                  </ul>
+                  <p class="text-sm text-gray-500 mt-3">Após 24 horas, você precisará assinar para continuar usando.</p>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <!-- Pergunta 3: Como Pagar -->
+            <AccordionItem value="item-3" class="border-b border-gray-200">
+              <AccordionHeader>
+                <AccordionTrigger
+                  class="w-full p-6 flex justify-between items-center text-left font-semibold text-gray-800 hover:bg-gray-50"
+                >
+                  <span>💳 Como faço o pagamento?</span>
+                  <svg
+                    class="w-5 h-5 transition-transform duration-300"
+                    :class="{ 'rotate-180': openAccordion === 'item-3' }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </AccordionTrigger>
+              </AccordionHeader>
+              <AccordionContent class="p-6 pt-0 text-gray-600">
+                <div class="space-y-4">
+                  <p>Aceitamos pagamento via <strong>PIX</strong> - rápido, seguro e prático!</p>
+                  
+                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 class="font-semibold text-blue-800 mb-2">📱 Passo a passo:</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-blue-700">
+                      <li>Faça o PIX de R$ 5,00</li>
+                      <li>Tire uma foto ou screenshot do comprovante</li>
+                      <li>Envie o comprovante através do WhatsApp</li>
+                      <li>Sua conta será liberada em até 24 horas</li>
+                    </ol>
+                  </div>
+
+                  <p class="text-sm text-gray-500">
+                    <strong>Importante:</strong> O comprovante é essencial para a liberação da sua conta. 
+                    Verificamos manualmente para garantir a segurança de todos.
+                  </p>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <!-- Pergunta 4: Liberação Manual -->
+            <AccordionItem value="item-4" class="border-b border-gray-200">
+              <AccordionHeader>
+                <AccordionTrigger
+                  class="w-full p-6 flex justify-between items-center text-left font-semibold text-gray-800 hover:bg-gray-50"
+                >
+                  <span>⏰ Quanto tempo demora para liberar minha conta?</span>
+                  <svg
+                    class="w-5 h-5 transition-transform duration-300"
+                    :class="{ 'rotate-180': openAccordion === 'item-4' }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </AccordionTrigger>
+              </AccordionHeader>
+              <AccordionContent class="p-6 pt-0 text-gray-600">
+                <div class="space-y-3">
+                  <p>Após o envio do comprovante, sua conta é liberada <strong>manualmente</strong> em até <strong>24 horas</strong>.</p>
+                  
+                  <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p class="text-green-800 font-medium">✅ Por que é manual?</p>
+                    <p class="text-green-700 text-sm mt-1">
+                      Para garantir a segurança e evitar fraudes, verificamos pessoalmente cada comprovante. 
+                      Isso nos permite manter a qualidade e confiabilidade do serviço.
+                    </p>
+                  </div>
+
+                  <p class="text-sm text-gray-500">
+                    <strong>Dica:</strong> Envie o comprovante durante horário comercial para liberação mais rápida!
+                  </p>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <!-- Pergunta 5: Segurança -->
+            <AccordionItem value="item-5">
+              <AccordionHeader>
+                <AccordionTrigger
+                  class="w-full p-6 flex justify-between items-center text-left font-semibold text-gray-800 hover:bg-gray-50"
+                >
+                  <span>🔒 Meus dados estão seguros?</span>
+                  <svg
+                    class="w-5 h-5 transition-transform duration-300"
+                    :class="{ 'rotate-180': openAccordion === 'item-5' }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </AccordionTrigger>
+              </AccordionHeader>
+              <AccordionContent class="p-6 pt-0 text-gray-600">
+                <div class="space-y-3">
+                  <p>Sim! Levamos a segurança muito a sério:</p>
+                  <ul class="list-disc list-inside space-y-2 ml-4">
+                    <li>Seus dados financeiros ficam apenas no seu dispositivo</li>
+                    <li>Usamos autenticação via Google (segurança máxima)</li>
+                    <li>Comprovantes são verificados e depois excluídos</li>
+                    <li>Não armazenamos informações bancárias</li>
+                  </ul>
+                  <p class="text-sm font-medium text-green-600 mt-3">🛡️ Sua privacidade é nossa prioridade!</p>
+                </div>
               </AccordionContent>
             </AccordionItem>
           </AccordionRoot>
