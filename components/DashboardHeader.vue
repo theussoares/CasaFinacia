@@ -39,10 +39,10 @@
                 class="bg-white rounded-lg shadow-lg border border-gray-100 w-56 p-2 z-50"
                 :side-offset="5"
               >
-                <DropdownMenuItem @click="shareInvite" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-rose-50 hover:text-pink-700 cursor-pointer focus:outline-none">
+                <!-- <DropdownMenuItem @click="shareInvite" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-rose-50 hover:text-pink-700 cursor-pointer focus:outline-none">
                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                    <span>{{ copied ? 'Link Copiado!' : 'Convidar Cônjuge' }}</span>
-                </DropdownMenuItem>
+                </DropdownMenuItem> -->
                 <DropdownMenuSeparator class="h-px bg-gray-100 my-1" />
                 <DropdownMenuItem @click="logout" class="flex items-center gap-3 px-3 py-2 text-sm text-red-600 rounded-md hover:bg-red-50 cursor-pointer focus:outline-none">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
