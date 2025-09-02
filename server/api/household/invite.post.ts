@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
     // Best practice: The server should return the full URL to prevent client-side mistakes.
     const config = useRuntimeConfig();
-    const inviteUrl = `${config.public.siteUrl}/?invite_token=${inviteToken}`;
+    const inviteUrl = `${config.public.siteUrl}/convite?invite_token=${inviteToken}`;
 
     return { inviteUrl };
 });

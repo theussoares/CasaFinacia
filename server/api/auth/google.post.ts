@@ -16,18 +16,20 @@ export default defineEventHandler(async (event) => {
     let userSnap = await userRef.get();
     if (!userSnap.exists) {
         let householdId: string;
+        let isConjugue = false;
         if (inviteToken) {
             const householdQuery = await db.collection('households').where('inviteToken', '==', inviteToken).limit(1).get();
             if (!householdQuery.empty) {
                 const householdDoc = householdQuery.docs[0];
                 householdId = householdDoc.id;
+                isConjugue = true; // Marca que este usuário entrou via convite
                 await householdDoc.ref.update({ inviteToken: FieldValue.delete() });
             } else { throw createError({ statusCode: 400, statusMessage: 'Invalid invite token' }); }
         } else {
             const newHouseholdRef = await db.collection('households').add({ owner: uid, createdAt: new Date() });
             householdId = newHouseholdRef.id;
         }
-        await userRef.set({ email, name, photoURL: picture, householdId });
+        await userRef.set({ email, name, photoURL: picture, householdId, isConjugue });
         userSnap = await userRef.get();
     }
 

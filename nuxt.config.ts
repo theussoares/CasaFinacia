@@ -1,23 +1,72 @@
 // nuxt.config.ts
 export default defineNuxtConfig({
+  compatibilityDate: '2025-09-02',
   devtools: { enabled: true },
   ssr: true, // Mantemos o SSR para performance e SEO
+  
+  // **PERF-01**: Configurações de otimização
+  nitro: {
+    storage: {
+      redis: {
+        driver: 'redis',
+        // Configuração para cache em produção (comentado para desenvolvimento)
+        // host: process.env.REDIS_HOST || 'localhost',
+        // port: process.env.REDIS_PORT || 6379
+      }
+    },
+    routeRules: {
+      // **PERF-02**: Headers de cache para recursos estáticos
+      '/api/**': { 
+        headers: { 
+          'Cache-Control': 'max-age=0, s-maxage=60', // Cache no CDN por 1 minuto
+        } 
+      },
+      // **PERF-03**: Cache para dados menos críticos
+      '/api/household/users': { 
+        headers: { 
+          'Cache-Control': 'max-age=30, s-maxage=120' // Cache local por 30s, CDN por 2min
+        } 
+      }
+    }
+  },
+  
   app: {
     head: {
       link: [
-        // (PERF) Adiciona preconnects para os domínios críticos do Firebase
-        // Conforme recomendado pelo PageSpeed Insights para acelerar o carregamento inicial.
+        // **PERF-04**: Preconnects para domínios críticos do Firebase
         { rel: 'preconnect', href: 'https://soccer-maneger.firebaseapp.com' },
-        { rel: 'preconnect', href: 'https://www.googleapis.com' }
+        { rel: 'preconnect', href: 'https://www.googleapis.com' },
+        { rel: 'preconnect', href: 'https://identitytoolkit.googleapis.com' },
       ]
     }
   },
+  
+  // **PERF-05**: Otimizações de build e runtime
+  experimental: {
+    payloadExtraction: false, // Reduz o tamanho do payload inicial
+  },
+  
   modules: [
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
-    '@nuxt/image', // Módulo de imagem para otimização (PERF-01)
-    '@nuxtjs/critters'
+    '@nuxt/image', // Módulo de imagem para otimização
+    '@nuxtjs/critters' // Critical CSS inlining
   ],
+  
+  // **PERF-06**: Otimização de imagens
+  image: {
+    quality: 85,
+    format: ['webp', 'avif', 'jpg'],
+    screens: {
+      xs: 320,
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+      xxl: 1536
+    }
+  },
+  
   runtimeConfig: {
     // Variáveis disponíveis apenas no servidor (segurança)
     firebaseServiceAccount: process.env.FIREBASE_SERVICE_ACCOUNT,

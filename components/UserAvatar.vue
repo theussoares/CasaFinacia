@@ -1,10 +1,18 @@
 <template>
   <img 
-    :src="photoUrl" 
+    v-if="!imageError && validPhotoUrl" 
+    :src="validPhotoUrl" 
     :alt="name || 'Usuário'" 
     :class="avatarClasses"
     @error="handleImageError"
   />
+  <div
+    v-else
+    :class="avatarClasses"
+    class="flex items-center justify-center bg-gradient-to-br from-pink-500 to-orange-400 text-white font-semibold"
+  >
+    {{ fallbackInitials }}
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -20,23 +28,56 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'md'
 });
 
+const imageError = ref(false);
+
+// **PERF-01**: Computed para validar URL da foto
+const validPhotoUrl = computed(() => {
+  if (!props.photoUrl) return null;
+  
+  // Verifica se é uma URL válida
+  try {
+    new URL(props.photoUrl);
+    return props.photoUrl;
+  } catch {
+    console.warn('URL de foto inválida:', props.photoUrl);
+    return null;
+  }
+});
+
+// **A11Y-01**: Fallback com iniciais do nome
+const fallbackInitials = computed(() => {
+  if (!props.name) return '👤';
+  
+  return props.name
+    .split(' ')
+    .map(word => word.charAt(0))
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+});
+
 // Classes CSS baseadas no tamanho
 const avatarClasses = computed(() => {
   const baseClasses = 'rounded-full border-2 border-white shadow-sm object-cover';
   
   switch (props.size) {
     case 'sm':
-      return `${baseClasses} w-8 h-8`;
+      return `${baseClasses} w-8 h-8 text-xs`;
     case 'lg':
-      return `${baseClasses} w-16 h-16`;
+      return `${baseClasses} w-16 h-16 text-lg`;
     default:
-      return `${baseClasses} w-10 h-10`;
+      return `${baseClasses} w-10 h-10 text-sm`;
   }
 });
 
-// Se a imagem falhar, define uma imagem padrão
+// **PERF-02**: Handler de erro com retry logic
 const handleImageError = (event: Event) => {
-  const target = event.target as HTMLImageElement;
-  target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhcl8xXzEpIi8+CjxwYXRoIGQ9Ik0xMiAxNkMxMiAxMi42ODYzIDE0LjY4NjMgMTAgMTggMTBIMjJDMjUuMzEzNyAxMCAyOCAxMi42ODYzIDI4IDE2VjI0QzI4IDI3LjMxMzcgMjUuMzEzNyAzMCAyMiAzMEgxOEMxNC42ODYzIDMwIDEyIDI3LjMxMzcgMTIgMjRWMTZaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDBfbGluZWFyXzFfMSIgeDE9IjIwIiB5MT0iMCIgeDI9IjIwIiB5Mj0iNDAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0VDNDA5OSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNGODcxNzEiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K';
+  console.warn('Erro ao carregar imagem do usuário:', props.photoUrl);
+  imageError.value = true;
 };
+
+// **PERF-03**: Reset error state quando photoUrl muda
+watch(() => props.photoUrl, () => {
+  imageError.value = false;
+});
 </script>

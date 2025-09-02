@@ -32,17 +32,30 @@ async function loginWithGoogle() {
   error.value = null;
   
   try {
+    // SEC-01: Verificar se Firebase foi carregado
+    if (!$firebase || !$firebase.getFirebaseAuth) {
+      throw new Error('Firebase não foi carregado. Recarregue a página e tente novamente.');
+    }
+    
     const auth = $firebase.getFirebaseAuth();
     const provider = $firebase.getGoogleProvider();
     
+    if (!auth) {
+      throw new Error('Serviço de autenticação não disponível.');
+    }
+    
     const result = await signInWithPopup(auth, provider);
     const idToken = await result.user.getIdToken();
+    
+    // SEC-01: Detectar invite_token da URL de forma segura
+    const urlParams = new URLSearchParams(window.location.search);
+    const inviteToken = urlParams.get('invite_token');
     
     // Call backend to get invite token and user info
     const res = await fetch('/api/auth/google', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken }),
+      body: JSON.stringify({ idToken, inviteToken }),
     });
     
     if (!res.ok) {

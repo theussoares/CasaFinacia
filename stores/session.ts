@@ -7,6 +7,7 @@ type User = {
     name: string;
     photoURL: string;
     householdId: string;
+    isConjugue?: boolean; // Indica se o usuário entrou via convite
 };
 
 export const useSessionStore = defineStore('session', () => {
@@ -23,10 +24,19 @@ export const useSessionStore = defineStore('session', () => {
 
     async function logout() {
         const { $firebase } = useNuxtApp() as any;
+        const { clearAllCache } = useCacheManager();
+        
+        // **LAYOUT-SHIFT-FIX**: Limpa todo cache persistente no logout
+        clearAllCache();
+        
         // Limpa o cookie do servidor
         await $fetch('/api/auth/logout', { method: 'POST' });
+        
         // Faz logout do Firebase no cliente
-        await signOut($firebase.getFirebaseAuth());
+        if ($firebase?.getFirebaseAuth()) {
+            await signOut($firebase.getFirebaseAuth());
+        }
+        
         setUser(null);
         await navigateTo('/');
     }

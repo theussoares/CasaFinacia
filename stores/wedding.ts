@@ -56,13 +56,78 @@ export const useWeddingStore = defineStore('wedding', {
     },
 
     actions: {
-        // ✅ REFACTORED: Removed explicit `this` typing.
+        // **LAYOUT-SHIFT-FIX**: Cache persistente com localStorage
+        getCachedData() {
+            if (process.server) return null;
+            
+            try {
+                const cached = localStorage.getItem('wedding-data-persistent');
+                const timestamp = localStorage.getItem('wedding-cache-timestamp');
+                
+                if (cached && timestamp) {
+                    return {
+                        data: JSON.parse(cached),
+                        timestamp: parseInt(timestamp)
+                    };
+                }
+            } catch (e) {
+                console.warn('Erro ao ler cache persistente:', e);
+                this.clearCache();
+            }
+            
+            return null;
+        },
+
+        setCachedData() {
+            if (process.server) return;
+            
+            try {
+                const dataToCache = {
+                    safes: this.safes,
+                    weddingDate: this.weddingDate
+                };
+                localStorage.setItem('wedding-data-persistent', JSON.stringify(dataToCache));
+                localStorage.setItem('wedding-cache-timestamp', Date.now().toString());
+            } catch (e) {
+                console.warn('Erro ao salvar cache persistente:', e);
+            }
+        },
+
+        clearCache() {
+            if (process.server) return;
+            
+            try {
+                localStorage.removeItem('wedding-data-persistent');
+                localStorage.removeItem('wedding-cache-timestamp');
+            } catch {
+                // Silencioso
+            }
+        },
+
+        // **PERF-01**: Inicialização com exibição instantânea
         async initialize() {
+            // **LAYOUT-SHIFT-FIX**: Carrega cache imediatamente
+            const cached = this.getCachedData();
+            if (cached) {
+                console.log('✅ Carregando dados do cache persistente');
+                this.safes = cached.data.safes || [];
+                this.weddingDate = cached.data.weddingDate || null;
+                
+                // Verifica se cache não está muito antigo (mais de 1 hora)
+                const isOldCache = Date.now() - cached.timestamp > 60 * 60 * 1000;
+                if (!isOldCache) {
+                    console.log('✅ Cache ainda válido, fazendo refresh em background');
+                    this.refreshDataInBackground();
+                    return;
+                }
+            }
+
+            // Se não há cache válido, carrega com loading
             this.loading = true;
             this.error = null;
             try {
-                // Run both fetches in parallel for better performance
                 await Promise.all([this.fetchSafes(), this.fetchWeddingDate()]);
+                this.setCachedData();
             } catch (e: any) {
                 this.error = "Falha ao inicializar os dados da aplicação.";
             } finally {
@@ -70,23 +135,54 @@ export const useWeddingStore = defineStore('wedding', {
             }
         },
 
+        // **PERF-02**: Atualização em background sem loading
+        async refreshDataInBackground() {
+            try {
+                console.log('🔄 Atualizando dados em background...');
+                const oldSafes = [...this.safes];
+                const oldDate = this.weddingDate;
+                
+                await Promise.all([this.fetchSafes(), this.fetchWeddingDate()]);
+                this.setCachedData();
+                
+                // Só loga se realmente mudou
+                const hasChanges = JSON.stringify(oldSafes) !== JSON.stringify(this.safes) || 
+                                 oldDate !== this.weddingDate;
+                if (hasChanges) {
+                    console.log('✅ Dados atualizados em background');
+                } else {
+                    console.log('ℹ️  Nenhuma mudança nos dados');
+                }
+            } catch (e) {
+                console.error('❌ Erro ao atualizar dados em background:', e);
+                // Silencioso - mantém dados do cache
+            }
+        },
+
         async fetchSafes() {
             try {
-                const { data, error } = await useFetch<Safe[]>('/api/safes');
+                // **PERF-04**: Usa useLazyFetch para melhor cache
+                const { data, error } = await useLazyFetch<Safe[]>('/api/safes', {
+                    key: 'user-safes',
+                    server: false, // Evita duplicate requests
+                });
                 if (error.value) throw error.value;
                 if (data.value) {
                     this.safes = data.value;
                 }
             } catch (e) {
                 console.error('Failed to fetch safes:', e);
-                // Re-throw to be caught by the initialize action
                 throw new Error('Could not fetch safes.');
             }
         },
 
         async fetchWeddingDate() {
             try {
-                const { data, error } = await useFetch<{ weddingDate: string | null }>('/api/wedding/date');
+                // **PERF-05**: Usa useLazyFetch para melhor cache
+                const { data, error } = await useLazyFetch<{ weddingDate: string | null }>('/api/wedding/date', {
+                    key: 'wedding-date',
+                    server: false, // Evita duplicate requests
+                });
                 if (error.value) throw error.value;
                 if (data.value && typeof data.value.weddingDate === 'string') {
                     this.weddingDate = data.value.weddingDate;
@@ -101,7 +197,7 @@ export const useWeddingStore = defineStore('wedding', {
             this.loading = true;
             this.error = null;
             try {
-                // Optimistic update for better UX
+                // **PERF-03**: Optimistic update + cache persistente
                 const oldDate = this.weddingDate;
                 this.weddingDate = newDate;
 
@@ -110,8 +206,10 @@ export const useWeddingStore = defineStore('wedding', {
                     body: { weddingDate: newDate },
                 });
                 if (error.value) {
-                    this.weddingDate = oldDate; // Revert on failure
+                    this.weddingDate = oldDate; 
                     throw error.value;
+                } else {
+                    this.setCachedData();
                 }
             } catch (e: any) {
                 this.error = "Failed to update wedding date.";
@@ -137,6 +235,9 @@ export const useWeddingStore = defineStore('wedding', {
             if (error.value) {
                 if (safe) safe.current -= amount;
                 this.error = 'Failed to update savings. Please try again.';
+            } else {
+                // **PERF-04**: Atualiza cache após mudança
+                this.setCachedData();
             }
         },
 
@@ -167,9 +268,10 @@ export const useWeddingStore = defineStore('wedding', {
 
                 if (error.value) throw error.value;
 
-                // Adiciona o novo cofre à lista existente na UI para reatividade instantânea
+                // **PERF-05**: Adiciona o novo cofre + cache persistente
                 if (data.value) {
                     this.safes.push(data.value as Safe);
+                    this.setCachedData();
                 }
             } catch (e: any) {
                 this.error = e.message;
