@@ -2,6 +2,7 @@
   <div class="bg-white p-8 text-center w-full">
     <h2 class="text-gray-900 mb-2 text-2xl font-bold">Acesse sua conta</h2>
     <p class="text-gray-500 mb-8">Comece a planejar o casamento dos seus sonhos.</p>
+    
     <button
       class="flex items-center justify-center gap-3 bg-gray-800 hover:bg-gray-900 text-white font-medium py-3 px-6 rounded-lg transition-colors w-full disabled:opacity-60 disabled:cursor-not-allowed"
       @click="loginWithGoogle"
@@ -29,9 +30,11 @@ const router = useRouter();
 async function loginWithGoogle() {
   loading.value = true;
   error.value = null;
+  
   try {
     const auth = $firebase.getFirebaseAuth();
     const provider = $firebase.getGoogleProvider();
+    
     const result = await signInWithPopup(auth, provider);
     const idToken = await result.user.getIdToken();
     
@@ -42,7 +45,12 @@ async function loginWithGoogle() {
       body: JSON.stringify({ idToken }),
     });
     
-    if (!res.ok) throw new Error('Falha ao autenticar.');
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Backend error:', errorText);
+      throw new Error('Falha ao autenticar.');
+    }
+    
     const data = await res.json();
     
     store.setUser({
@@ -50,12 +58,13 @@ async function loginWithGoogle() {
       email: data.email,
       name: data.name,
       photoURL: data.photoURL,
-      token: data.token,
+      householdId: data.householdId,
     });
     
     // Redirect to home
     router.push('/home');
   } catch (e: any) {
+    console.error('Login error:', e);
     error.value = e.message || 'Erro desconhecido.';
   } finally {
     loading.value = false;

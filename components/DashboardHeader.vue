@@ -11,9 +11,9 @@
           </button> -->
           <div class="flex items-center gap-2">
             <span class="text-gray-700 font-medium">
-                Olá <b class="text-rose-500">{{ session.user && session.user.name ? session.user.name.split(' ')[0] : 'Usuário' }}</b>
+                Olá <b class="text-rose-500">{{ session.user?.name ? session.user.name.split(' ')[0] : 'Usuário' }}</b>
                 <span v-if="session.user && 'isConjugue' in session.user && (session.user as any).isConjugue">
-                     ou olá cônjuge do <b class="text-rose-500">{{ session.user && session.user.name ? session.user.name.split(' ')[0] : 'Usuário' }}</b>
+                     ou olá cônjuge do <b class="text-rose-500">{{ session.user?.name ? session.user.name.split(' ')[0] : 'Usuário' }}</b>
                 </span>
             </span>
           </div>
@@ -21,12 +21,16 @@
         
         <div v-if="session.user" class="flex items-center gap-4"
         >
-          <span class="text-gray-700 font-medium hidden md:block">Bem-vindo(a), {{ session.user.name.split(' ')[0] }}!</span>
+          <span class="text-gray-700 font-medium hidden md:block">Bem-vindo(a), {{ session.user?.name ? session.user.name.split(' ')[0] : 'Usuário' }}!</span>
           
           <DropdownMenuRoot>
             <DropdownMenuTrigger as-child>
               <button class="focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 rounded-full">
-                <img :src="session.user.photoURL" :alt="session.user.name" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                <UserAvatar 
+                  :photo-url="session.user?.photoURL" 
+                  :name="session.user?.name" 
+                  size="md"
+                />
               </button>
             </DropdownMenuTrigger>
             
@@ -53,12 +57,16 @@
 </header>
 <div v-if="session.user" class="hidden md:flex items-center gap-4 md:fixed md:top-10 md:right-4"
     >
-      <span class="text-gray-700 font-medium hidden md:block">Bem-vindo(a), {{ session.user.name.split(' ')[0] }}!</span>
+      <span class="text-gray-700 font-medium hidden md:block">Bem-vindo(a), {{ session.user?.name ? session.user.name.split(' ')[0] : 'Usuário' }}!</span>
       
       <DropdownMenuRoot>
         <DropdownMenuTrigger as-child>
           <button class="focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 rounded-full">
-            <img :src="session.user.photoURL" :alt="session.user.name" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+            <UserAvatar 
+              :photo-url="session.user?.photoURL" 
+              :name="session.user?.name" 
+              size="md"
+            />
           </button>
         </DropdownMenuTrigger>
         

@@ -7,7 +7,7 @@
       <input 
         id="distribute-amount"
         v-model="amountToDistribute"
-        v-numeric-only
+        @input="handleInput"
         inputmode="decimal"
         type="number" 
         placeholder="Ex: 500.00"
@@ -28,6 +28,27 @@ import { useWeddingStore } from '~/stores/wedding';
 
 const store = useWeddingStore();
 const amountToDistribute = ref<number | null>(null);
+
+// Função para sanitizar input numérico
+const handleInput = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  let value = target.value;
+  
+  // Substitui vírgula por ponto
+  value = value.replace(/,/g, '.');
+  
+  // Remove qualquer caracter que não seja dígito ou ponto
+  value = value.replace(/[^0-9.]/g, '');
+  
+  // Garante apenas um ponto decimal
+  const parts = value.split('.');
+  if (parts.length > 2) {
+    value = parts[0] + '.' + parts.slice(1).join('');
+  }
+  
+  target.value = value;
+  amountToDistribute.value = value ? parseFloat(value) : null;
+};
 
 const handleDistribution = () => {
   if (amountToDistribute.value && amountToDistribute.value > 0) {

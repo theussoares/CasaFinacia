@@ -19,24 +19,20 @@ function formatNumber(value: string): string {
 }
 
 /**
- * Diretiva v-numeric-only
- * - Garante que apenas números e um único ponto decimal possam ser inseridos.
- * - Trata da colagem de texto, sanitizando o valor.
+ * Plugin para registrar a diretiva v-numeric-only
  */
-export const numericOnlyDirective = {
-    mounted(el: HTMLInputElement) {
-        const handler = () => {
-            const formatted = formatNumber(el.value);
-            if (el.value !== formatted) {
-                el.value = formatted;
-                // Dispara um evento de 'input' para que o v-model seja atualizado
-                el.dispatchEvent(new Event('input'));
-            }
-        };
-        el.addEventListener('input', handler);
-    },
-};
-
 export default defineNuxtPlugin((nuxtApp) => {
-    nuxtApp.vueApp.directive('numeric-only', numericOnlyDirective);
+    nuxtApp.vueApp.directive('numeric-only', {
+        mounted(el: HTMLInputElement) {
+            const handler = () => {
+                const formatted = formatNumber(el.value);
+                if (el.value !== formatted) {
+                    el.value = formatted;
+                    // Dispara um evento de 'input' para que o v-model seja atualizado
+                    el.dispatchEvent(new Event('input'));
+                }
+            };
+            el.addEventListener('input', handler);
+        },
+    });
 });
