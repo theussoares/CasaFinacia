@@ -3,7 +3,7 @@
     <div class="flex flex-col flex-1">
       <UnifiedHeader />
       
-      <main class="md:!px-4 py-2 flex flex-col">
+      <main class="px-2 md:!px-4 py-2 flex flex-col">
         <slot />
       </main>
     </div>
