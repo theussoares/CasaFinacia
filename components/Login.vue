@@ -82,7 +82,7 @@ const handleTurnstileExpired = () => {
 };
 
 async function loginWithGoogle() {
-  // **SEC-03**: Verifica se CAPTCHA foi validado
+  // **UI-01**: Verifica se CAPTCHA foi validado (apenas para UI)
   if (!isTurnstileVerified.value || !turnstileToken.value) {
     error.value = 'Por favor, complete a verificação de segurança primeiro.';
     return;
@@ -92,7 +92,7 @@ async function loginWithGoogle() {
   error.value = null;
   
   try {
-    // **SEC-04**: Verifica se Firebase foi carregado
+    // **AUTH-01**: Verifica se Firebase foi carregado
     if (!$firebase || !$firebase.getFirebaseAuth) {
       throw new Error('Firebase não foi carregado. Recarregue a página e tente novamente.');
     }
@@ -104,33 +104,21 @@ async function loginWithGoogle() {
       throw new Error('Serviço de autenticação não disponível.');
     }
     
-    // **SEC-05**: Primeiro, verifica o token do CAPTCHA no servidor
-    const { verifyToken } = useTurnstile();
-    const isCaptchaValid = await verifyToken(turnstileToken.value);
-    
-    if (!isCaptchaValid) {
-      // Reset do CAPTCHA se verificação falhar
-      turnstileRef.value?.reset();
-      isTurnstileVerified.value = false;
-      turnstileToken.value = null;
-      throw new Error('Verificação de segurança falhou. Tente novamente.');
-    }
-    
+    // **AUTH-02**: Faz login diretamente com Firebase
     const result = await signInWithPopup(auth, provider);
     const idToken = await result.user.getIdToken();
     
-    // **SEC-06**: Detectar invite_token da URL de forma segura
+    // **AUTH-03**: Detectar invite_token da URL
     const urlParams = new URLSearchParams(window.location.search);
     const inviteToken = urlParams.get('invite_token');
     
-    // **SEC-07**: Envia tanto o idToken quanto o turnstileToken para validação dupla
+    // **AUTH-04**: Envia apenas idToken e inviteToken (sem CAPTCHA)
     const res = await fetch('/api/auth/google', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         idToken, 
-        inviteToken,
-        turnstileToken: turnstileToken.value // Token CAPTCHA para validação adicional
+        inviteToken
       }),
     });
     

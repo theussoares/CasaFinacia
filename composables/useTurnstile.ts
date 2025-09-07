@@ -170,26 +170,12 @@ export const useTurnstile = () => {
     }
   };
 
-  // **SEC-06**: Função para obter o token atual
+  // **UI-01**: Função para obter o token atual
   const getToken = () => {
     if (window.turnstile && currentWidgetId.value) {
       return window.turnstile.getResponse(currentWidgetId.value);
     }
     return currentToken.value;
-  };
-
-  // **SEC-07**: Função para verificar token no servidor
-  const verifyToken = async (token: string) => {
-    try {
-      const response = await $fetch<{ success: boolean }>('/api/auth/verify-turnstile', {
-        method: 'POST',
-        body: { token }
-      });
-      return response.success === true;
-    } catch (err) {
-      console.error('Turnstile verification error:', err);
-      return false;
-    }
   };
 
   // **UX-01**: Função de inicialização completa
@@ -246,7 +232,6 @@ export const useTurnstile = () => {
     resetWidget,
     removeWidget,
     getToken,
-    verifyToken,
     initialize
   };
 };
