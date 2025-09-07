@@ -6,16 +6,18 @@
       <label for="distribute-amount" class="sr-only">Valor a ser distribuído</label>
       <input 
         id="distribute-amount"
-        v-model="amountToDistribute"
-        @input="handleInput"
-        inputmode="decimal"
-        type="number" 
-        placeholder="Ex: 500.00"
-        class="flex-grow p-3 border border-gray-300 rounded-lg text-right"
+        v-model="displayValue"
+        v-currency-mask
+        inputmode="numeric"
+        type="text" 
+        placeholder="R$ 0,00"
+        class="flex-grow p-3 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-stone-400 focus:border-transparent"
+        @currency-input="handleCurrencyInput"
       />
       <button 
         @click="handleDistribution"
-        class="px-6 py-3 bg-stone-700 text-white font-semibold rounded-lg hover:bg-stone-800 transition-colors"
+        :disabled="!numericValue || numericValue <= 0"
+        class="px-6 py-3 bg-stone-700 text-white font-semibold rounded-lg hover:bg-stone-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
         Distribuir Igualmente
       </button>
@@ -27,33 +29,25 @@
 import { useWeddingStore } from '~/stores/wedding';
 
 const store = useWeddingStore();
-const amountToDistribute = ref<number | null>(null);
 
-// Função para sanitizar input numérico
-const handleInput = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  let value = target.value;
-  
-  // Substitui vírgula por ponto
-  value = value.replace(/,/g, '.');
-  
-  // Remove qualquer caracter que não seja dígito ou ponto
-  value = value.replace(/[^0-9.]/g, '');
-  
-  // Garante apenas um ponto decimal
-  const parts = value.split('.');
-  if (parts.length > 2) {
-    value = parts[0] + '.' + parts.slice(1).join('');
-  }
-  
-  target.value = value;
-  amountToDistribute.value = value ? parseFloat(value) : null;
+// **PERF-01**: Estados para a máscara de moeda
+const displayValue = ref<string>('');
+const numericValue = ref<number>(0);
+
+// **UX-01**: Handler para capturar valor numérico da diretiva
+const handleCurrencyInput = (event: CustomEvent) => {
+  const detail = event.detail as { formatted: string; numeric: number };
+  displayValue.value = detail.formatted;
+  numericValue.value = detail.numeric;
 };
 
+// **PERF-02**: Handler otimizado para distribuição
 const handleDistribution = () => {
-  if (amountToDistribute.value && amountToDistribute.value > 0) {
-    store.distributeFunds(amountToDistribute.value);
-    amountToDistribute.value = null; // Reset input
+  if (numericValue.value && numericValue.value > 0) {
+    store.distributeFunds(numericValue.value);
+    // **UX-02**: Limpa o input após distribuir
+    displayValue.value = '';
+    numericValue.value = 0;
   }
 };
 </script>

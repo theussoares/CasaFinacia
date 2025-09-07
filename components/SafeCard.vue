@@ -18,17 +18,19 @@
 
     <form @submit.prevent="handleAddMoney" class="flex gap-2 flex-col sm:!flex-row">
       <input 
-        v-model="amountToAdd"
-        v-numeric-only
+        v-model="displayValue"
+        v-currency-mask
         type="text"
-        inputmode="decimal"
+        inputmode="numeric"
         :aria-label="`Adicionar valor para ${safe.name}`"
-        placeholder="Valor" 
+        placeholder="R$ 0,00" 
         class="flex-grow p-2 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-pink-400 focus:border-transparent"
+        @currency-input="handleCurrencyInput"
       />
       <button 
         type="submit"
-        class="px-4 py-2 bg-stone-700 text-white font-semibold rounded-lg hover:bg-stone-800 transition-colors"
+        :disabled="!numericValue || numericValue <= 0"
+        class="px-4 py-2 bg-stone-700 text-white font-semibold rounded-lg hover:bg-stone-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
         Guardar
       </button>
@@ -43,17 +45,30 @@ type Safe = { id: string; name: string; goal: number; current: number; };
 const props = defineProps<{ safe: Safe; }>();
 const store = useWeddingStore();
 const { formatCurrency } = useCurrency();
-const amountToAdd = ref<number | null>(null);
+
+// **PERF-01**: Estados para a máscara de moeda
+const displayValue = ref<string>('');
+const numericValue = ref<number>(0);
 
 const percentage = computed(() => {
   if (props.safe.goal <= 0) return 0;
   return Math.min((props.safe.current / props.safe.goal) * 100, 100);
 });
 
+// **UX-01**: Handler para capturar valor numérico da diretiva
+const handleCurrencyInput = (event: CustomEvent) => {
+  const detail = event.detail as { formatted: string; numeric: number };
+  displayValue.value = detail.formatted;
+  numericValue.value = detail.numeric;
+};
+
+// **PERF-02**: Handler otimizado para adicionar dinheiro
 const handleAddMoney = () => {
-  if (amountToAdd.value && amountToAdd.value > 0) {
-    store.addMoneyToSafe(props.safe.id, amountToAdd.value);
-    amountToAdd.value = null;
+  if (numericValue.value && numericValue.value > 0) {
+    store.addMoneyToSafe(props.safe.id, numericValue.value);
+    // **UX-02**: Limpa o input após adicionar
+    displayValue.value = '';
+    numericValue.value = 0;
   }
 };
 </script>

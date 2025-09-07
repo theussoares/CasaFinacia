@@ -23,7 +23,17 @@
             <label class="text-sm font-medium text-stone-700 block mb-1" for="goal">
               Meta (R$)
             </label>
-            <input id="goal" v-model.number="form.goal" type="number" step="0.01" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Ex: 2500.00" required />
+            <input 
+              id="goal" 
+              v-model="displayGoal"
+              v-currency-mask
+              type="text" 
+              inputmode="numeric"
+              class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-stone-400 focus:border-transparent" 
+              placeholder="R$ 0,00" 
+              required 
+              @currency-input="handleGoalInput"
+            />
           </fieldset>
           
           <div class="flex justify-end gap-4">
@@ -60,11 +70,22 @@ const emit = defineEmits(['update:open']);
 const store = useWeddingStore();
 const form = ref({ name: '', goal: 0 });
 
+// **PERF-01**: Estados para a máscara de moeda no campo goal
+const displayGoal = ref<string>('');
+
+// **UX-01**: Handler para capturar valor numérico da diretiva
+const handleGoalInput = (event: CustomEvent) => {
+  const detail = event.detail as { formatted: string; numeric: number };
+  displayGoal.value = detail.formatted;
+  form.value.goal = detail.numeric;
+};
+
 async function handleSubmit() {
   if (form.value.name.trim() && form.value.goal > 0) {
     await store.createSafe({ ...form.value });
-    // Reseta o formulário e fecha o modal
+    // **UX-02**: Reseta o formulário e fecha o modal
     form.value = { name: '', goal: 0 };
+    displayGoal.value = '';
     emit('update:open', false);
   }
 }
