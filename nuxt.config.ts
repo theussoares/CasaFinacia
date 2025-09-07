@@ -70,6 +70,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Variáveis disponíveis apenas no servidor (segurança)
     firebaseServiceAccount: process.env.FIREBASE_SERVICE_ACCOUNT,
+    turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
     // Variáveis públicas (disponíveis no cliente e servidor)
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
@@ -79,6 +80,7 @@ export default defineNuxtConfig({
       firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET,
       firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
       firebaseAppId: process.env.FIREBASE_APP_ID,
+      turnstileSiteKey: process.env.TURNSTILE_SITE_KEY,
     }
   },
 })
