@@ -16,7 +16,18 @@
             <label class="text-sm font-medium text-stone-700 block mb-1" for="name">
               Nome do Cofre
             </label>
-            <input id="name" v-model="form.name" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Ex: Fotografia" required />
+            <input 
+              id="name" 
+              v-model="form.name" 
+              :class="[
+                'w-full p-2 border rounded-md',
+                errors.name ? 'border-red-500' : 'border-gray-300'
+              ]" 
+              placeholder="Ex: Fotografia" 
+              required 
+              @input="clearErrors"
+            />
+            <p v-if="errors.name" class="text-red-500 text-xs mt-1">{{ errors.name }}</p>
           </fieldset>
           
           <fieldset class="mb-6">
@@ -29,11 +40,14 @@
               v-currency-mask
               type="text" 
               inputmode="numeric"
-              class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-stone-400 focus:border-transparent" 
+              :class="[
+                'w-full p-2 border rounded-md focus:ring-2 focus:ring-stone-400 focus:border-transparent',
+                errors.goal ? 'border-red-500' : 'border-gray-300'
+              ]" 
               placeholder="R$ 0,00" 
-              required 
               @currency-input="handleGoalInput"
             />
+            <p v-if="errors.goal" class="text-red-500 text-xs mt-1">{{ errors.goal }}</p>
           </fieldset>
           
           <div class="flex justify-end gap-4">
@@ -73,20 +87,67 @@ const form = ref({ name: '', goal: 0 });
 // **PERF-01**: Estados para a máscara de moeda no campo goal
 const displayGoal = ref<string>('');
 
+// **UX-02**: Estado para mensagens de erro
+const errors = ref({ name: '', goal: '' });
+
 // **UX-01**: Handler para capturar valor numérico da diretiva
 const handleGoalInput = (event: CustomEvent) => {
+  console.log('Currency input event:', event);
   const detail = event.detail as { formatted: string; numeric: number };
-  displayGoal.value = detail.formatted;
-  form.value.goal = detail.numeric;
+  
+  // Garante que sempre temos um número válido
+  if (detail && typeof detail.numeric === 'number' && !isNaN(detail.numeric)) {
+    displayGoal.value = detail.formatted;
+    form.value.goal = detail.numeric;
+    console.log('Form goal updated to:', form.value.goal, typeof form.value.goal);
+    
+    // Limpa erro da meta quando valor válido é inserido
+    if (form.value.goal > 0) {
+      errors.value.goal = '';
+    }
+  }
+};
+
+// **UX-03**: Função para limpar erros
+const clearErrors = () => {
+  errors.value = { name: '', goal: '' };
+};
+
+// **UX-04**: Função para validar formulário
+const validateForm = () => {
+  clearErrors();
+  let isValid = true;
+  
+  if (!form.value.name.trim()) {
+    errors.value.name = 'Nome é obrigatório';
+    isValid = false;
+  }
+  
+  if (!form.value.goal || form.value.goal <= 0) {
+    errors.value.goal = 'Meta deve ser maior que zero';
+    isValid = false;
+  }
+  
+  return isValid;
 };
 
 async function handleSubmit() {
-  if (form.value.name.trim() && form.value.goal > 0) {
+  console.log('Submitting form:', form.value);
+  
+  if (!validateForm()) {
+    console.error('Formulário inválido:', errors.value);
+    return;
+  }
+  
+  try {
     await store.createSafe({ ...form.value });
-    // **UX-02**: Reseta o formulário e fecha o modal
+    // **UX-05**: Reseta o formulário e fecha o modal
     form.value = { name: '', goal: 0 };
     displayGoal.value = '';
+    clearErrors();
     emit('update:open', false);
+  } catch (error) {
+    console.error('Erro ao criar cofre:', error);
   }
 }
 </script>

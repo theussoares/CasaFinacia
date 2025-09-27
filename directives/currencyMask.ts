@@ -134,7 +134,7 @@ export const currencyMaskDirective = {
 
     // **A11Y-05**: Configura atributos de acessibilidade
     el.setAttribute('inputmode', 'numeric');
-    el.setAttribute('pattern', '[0-9]*');
+    // Não define pattern pois o valor formatado contém caracteres não numéricos
     
     // **UX-04**: Configura placeholder se não existir
     if (!el.placeholder) {
