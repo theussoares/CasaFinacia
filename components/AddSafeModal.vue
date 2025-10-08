@@ -52,12 +52,30 @@
           
           <div class="flex justify-end gap-4">
             <DialogClose as-child>
-              <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200" type="button">
+              <button 
+                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+                type="button"
+                :disabled="isSubmitting"
+              >
                 Cancelar
               </button>
             </DialogClose>
-            <button class="px-4 py-2 bg-stone-700 text-white font-semibold rounded-lg hover:bg-stone-800" type="submit">
-              Salvar
+            <button 
+              class="px-4 py-2 bg-stone-700 text-white font-semibold rounded-lg hover:bg-stone-800 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2" 
+              type="submit"
+              :disabled="isSubmitting"
+            >
+              <svg 
+                v-if="isSubmitting" 
+                class="animate-spin h-4 w-4" 
+                xmlns="http://www.w3.org/2000/svg" 
+                fill="none" 
+                viewBox="0 0 24 24"
+              >
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>{{ isSubmitting ? 'Criando...' : 'Salvar' }}</span>
             </button>
           </div>
         </form>
@@ -89,6 +107,9 @@ const displayGoal = ref<string>('');
 
 // **UX-02**: Estado para mensagens de erro
 const errors = ref({ name: '', goal: '' });
+
+// **UX-05**: Estado para controlar loading do botão
+const isSubmitting = ref(false);
 
 // **UX-01**: Handler para capturar valor numérico da diretiva
 const handleGoalInput = (event: CustomEvent) => {
@@ -139,15 +160,26 @@ async function handleSubmit() {
     return;
   }
   
+  // **UX-06**: Previne múltiplos cliques durante o submit
+  if (isSubmitting.value) {
+    console.log('Já está submetendo, ignorando clique duplicado');
+    return;
+  }
+  
+  isSubmitting.value = true;
+  
   try {
     await store.createSafe({ ...form.value });
-    // **UX-05**: Reseta o formulário e fecha o modal
+    // **UX-07**: Reseta o formulário e fecha o modal
     form.value = { name: '', goal: 0 };
     displayGoal.value = '';
     clearErrors();
     emit('update:open', false);
   } catch (error) {
     console.error('Erro ao criar cofre:', error);
+    // Mantém o modal aberto em caso de erro para o usuário tentar novamente
+  } finally {
+    isSubmitting.value = false;
   }
 }
 </script>

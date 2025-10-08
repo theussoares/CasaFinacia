@@ -188,21 +188,71 @@ export default defineNuxtPlugin(async (nuxtApp) => {
             return;
         }
 
-        // **PERF-03**: Observer assíncrono com cache eterno
+        // **AUTH-FIX**: Observer assíncrono com refresh automático de token
         onAuthStateChanged(auth, async (firebaseUser) => {
-            if (firebaseUser && !sessionStore.user) {
+            if (firebaseUser) {
+                // **AUTH-01**: Atualiza o token no cookie periodicamente
                 try {
-                    const { user } = await $fetch('/api/auth/me');
-                    if (user) {
-                        sessionStore.setUser(user as any);
-                        setEternalCache(user); // Atualiza cache eterno
+                    console.log('🔑 Renovando token de autenticação...');
+                    const idToken = await firebaseUser.getIdToken(true); // force refresh
+                    
+                    // Atualiza o cookie no servidor
+                    await $fetch('/api/auth/session', {
+                        method: 'POST',
+                        body: { idToken }
+                    });
+                    
+                    console.log('✅ Token renovado com sucesso');
+                    
+                    // Sincroniza dados do usuário se necessário
+                    if (!sessionStore.user) {
+                        const { user } = await $fetch('/api/auth/me');
+                        if (user) {
+                            sessionStore.setUser(user as any);
+                            setEternalCache(user);
+                        }
                     }
                 } catch (e) {
-                    console.error('Erro ao sincronizar usuário:', e);
+                    console.error('❌ Erro ao renovar token:', e);
                 }
             } else if (!firebaseUser && sessionStore.user) {
                 sessionStore.setUser(null);
-                clearEternalCache(); // Limpa cache eterno
+                clearEternalCache();
+            }
+        });
+
+        // **AUTH-02**: Configura renovação automática do token a cada 50 minutos (antes de expirar)
+        setInterval(async () => {
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                try {
+                    console.log('🔄 Renovação automática do token...');
+                    const idToken = await currentUser.getIdToken(true);
+                    await $fetch('/api/auth/session', {
+                        method: 'POST',
+                        body: { idToken }
+                    });
+                    console.log('✅ Token renovado automaticamente');
+                } catch (e) {
+                    console.error('❌ Erro na renovação automática:', e);
+                }
+            }
+        }, 50 * 60 * 1000); // 50 minutos
+
+        // **AUTH-03**: Renova token quando a aba fica visível novamente
+        document.addEventListener('visibilitychange', async () => {
+            if (!document.hidden && auth.currentUser) {
+                try {
+                    console.log('👁️ Aba visível novamente, verificando token...');
+                    const idToken = await auth.currentUser.getIdToken(true);
+                    await $fetch('/api/auth/session', {
+                        method: 'POST',
+                        body: { idToken }
+                    });
+                    console.log('✅ Token verificado e atualizado');
+                } catch (e) {
+                    console.error('❌ Erro ao verificar token:', e);
+                }
             }
         });
     }

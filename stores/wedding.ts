@@ -280,5 +280,40 @@ export const useWeddingStore = defineStore('wedding', {
                 this.loading = false;
             }
         },
+
+        async deleteSafe(safeId: string) {
+            this.loading = true;
+            this.error = null;
+            
+            try {
+                // **UX-01**: Optimistic update - remove do array antes da confirmação do servidor
+                const safeIndex = this.safes.findIndex(s => s.id === safeId);
+                const deletedSafe = safeIndex !== -1 ? this.safes[safeIndex] : null;
+                
+                if (safeIndex !== -1) {
+                    this.safes.splice(safeIndex, 1);
+                }
+
+                const { error } = await useFetch(`/api/safes/delete?id=${safeId}`, {
+                    method: 'DELETE',
+                });
+
+                if (error.value) {
+                    // **UX-02**: Reverte em caso de erro
+                    if (deletedSafe && safeIndex !== -1) {
+                        this.safes.splice(safeIndex, 0, deletedSafe);
+                    }
+                    throw error.value;
+                }
+
+                // **PERF-06**: Atualiza cache após exclusão bem-sucedida
+                this.setCachedData();
+            } catch (e: any) {
+                this.error = e.message || 'Falha ao excluir cofre';
+                throw e;
+            } finally {
+                this.loading = false;
+            }
+        },
     },
 });

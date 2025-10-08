@@ -106,7 +106,7 @@ async function loginWithGoogle() {
     
     // **AUTH-02**: Faz login diretamente com Firebase
     const result = await signInWithPopup(auth, provider);
-    const idToken = await result.user.getIdToken();
+    const idToken = await result.user.getIdToken(true); // força refresh do token
     
     // **AUTH-03**: Detectar invite_token da URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -130,13 +130,26 @@ async function loginWithGoogle() {
     
     const data = await res.json();
     
-    store.setUser({
+    // **AUTH-05**: Salva dados completos do usuário na store
+    const userData = {
       uid: data.uid,
       email: data.email,
       name: data.name,
       photoURL: data.photoURL,
       householdId: data.householdId,
-    });
+    };
+    
+    store.setUser(userData);
+    
+    // **AUTH-06**: Salva no cache eterno do localStorage
+    try {
+      localStorage.setItem('user-data-eternal', JSON.stringify(userData));
+      localStorage.setItem('user-auth-eternal', 'true');
+      localStorage.setItem('user-cache-timestamp', Date.now().toString());
+      console.log('✅ Dados do usuário salvos no cache eterno');
+    } catch (e) {
+      console.warn('⚠️ Erro ao salvar cache:', e);
+    }
     
     // Redirect to home
     router.push('/home');

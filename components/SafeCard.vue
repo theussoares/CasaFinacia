@@ -2,7 +2,23 @@
   <article class="bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
     <div class="flex justify-between items-baseline mb-2">
       <h3 class="text-xl font-bold text-gray-800">{{ safe.name }}</h3>
-      <span class="text-sm font-medium text-gray-500">Meta: {{ formatCurrency(safe.goal) }}</span>
+      <div class="flex items-center gap-3">
+        <span class="text-sm font-medium text-gray-500">Meta: {{ formatCurrency(safe.goal) }}</span>
+        <button
+          @click="showDeleteModal = true"
+          class="text-gray-400 hover:text-red-600 transition-colors p-1 hover:bg-red-50 rounded"
+          :aria-label="`Excluir cofre ${safe.name}`"
+          title="Excluir cofre"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <p class="text-gray-600 mb-4">{{ formatCurrency(safe.current) }} guardados</p>
@@ -35,6 +51,14 @@
         Guardar
       </button>
     </form>
+    
+    <!-- Modal de confirmação de exclusão -->
+    <DeleteSafeModal
+      v-model:open="showDeleteModal"
+      :safe-id="safe.id"
+      :safe-name="safe.name"
+      @deleted="handleDeleted"
+    />
   </article>
 </template>
 
@@ -49,6 +73,9 @@ const { formatCurrency } = useCurrency();
 // **PERF-01**: Estados para a máscara de moeda
 const displayValue = ref<string>('');
 const numericValue = ref<number>(0);
+
+// **UX-03**: Estado para controlar o modal de exclusão
+const showDeleteModal = ref(false);
 
 const percentage = computed(() => {
   if (props.safe.goal <= 0) return 0;
@@ -70,5 +97,10 @@ const handleAddMoney = () => {
     displayValue.value = '';
     numericValue.value = 0;
   }
+};
+
+// **UX-04**: Handler para quando o cofre for excluído
+const handleDeleted = () => {
+  console.log('✅ Cofre excluído com sucesso');
 };
 </script>
