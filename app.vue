@@ -15,22 +15,22 @@ useHead({
   htmlAttrs: {
     lang: 'pt-BR' // Acessibilidade e SEO
   },
-  link: [
-    { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
-    { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
-    { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
-    { rel: 'manifest', href: '/site.webmanifest' }
+  meta: [
+    // **PWA-01**: Meta tag para cor da barra de status
+    { name: 'theme-color', content: '#ec4899', media: '(prefers-color-scheme: light)' },
+    { name: 'theme-color', content: '#831843', media: '(prefers-color-scheme: dark)' },
   ],
 })
 
 // useSeoMeta cuida das tags de SEO e de compartilhamento em redes sociais
 useSeoMeta({
-  title: 'Planejando a dois | Planejador Financeiro para Casamentos',
-  ogTitle: 'Planejando a dois | Seu Casamento Organizado',
+  title: 'Casa Financia - Planejando a Dois | Planejador Financeiro para Casamentos',
+  ogTitle: 'Casa Financia - Planejando a Dois | Seu Casamento Organizado',
   description: 'Acompanhe e organize as economias para o grande dia! Crie metas, distribua valores e veja seu sonho se realizar.',
   ogDescription: 'A ferramenta completa para organizar as finanças do seu casamento.',
   // SEO: A URL da imagem é dinâmica e absoluta, essencial para redes sociais.
-  ogImage: `${config.public.siteUrl}/social-share.png`, // Crie esta imagem e coloque na pasta /public
+  ogImage: `${config.public.siteUrl}/feature-dashboard.webp`,
+  ogUrl: config.public.siteUrl,
   twitterCard: 'summary_large_image',
 })
 </script>

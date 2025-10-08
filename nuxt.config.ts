@@ -32,11 +32,43 @@ export default defineNuxtConfig({
   
   app: {
     head: {
+      title: 'Casa Financia - Planejando a Dois',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes' },
+        { name: 'description', content: 'Planeje seu casamento e gerencie suas economias de forma inteligente' },
+        
+        // **PWA-01**: Meta tags para PWA
+        { name: 'application-name', content: 'Casa Financia' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+        { name: 'apple-mobile-web-app-title', content: 'Casa Financia' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'theme-color', content: '#ec4899' },
+        
+        // **SEO-01**: Open Graph
+        { property: 'og:title', content: 'Casa Financia - Planejando a Dois' },
+        { property: 'og:description', content: 'Planeje seu casamento e gerencie suas economias de forma inteligente' },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:locale', content: 'pt_BR' },
+        
+        // **SEO-02**: Twitter Card
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: 'Casa Financia - Planejando a Dois' },
+        { name: 'twitter:description', content: 'Planeje seu casamento e gerencie suas economias de forma inteligente' },
+      ],
       link: [
         // **PERF-04**: Preconnects para domínios críticos do Firebase
         { rel: 'preconnect', href: 'https://soccer-maneger.firebaseapp.com' },
         { rel: 'preconnect', href: 'https://www.googleapis.com' },
         { rel: 'preconnect', href: 'https://identitytoolkit.googleapis.com' },
+        
+        // **PWA-02**: Links para ícones e manifest
+        { rel: 'manifest', href: '/site.webmanifest' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+        { rel: 'mask-icon', href: '/safari-pinned-tab.svg', color: '#ec4899' },
       ]
     }
   },

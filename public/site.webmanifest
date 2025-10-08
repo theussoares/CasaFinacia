@@ -1,19 +1,53 @@
 {
-    "name": "Planejando a dois",
-    "short_name": "Planejando a dois",
+    "name": "Casa Financia - Planejando a Dois",
+    "short_name": "Casa Financia",
+    "description": "Planeje seu casamento e gerencie suas economias de forma inteligente",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "theme_color": "#ec4899",
+    "background_color": "#fdf2f8",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         },
         {
             "src": "/android-chrome-512x512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         }
     ],
-    "theme_color": "#ec4899",
-    "background_color": "#fdf2f8",
-    "display": "standalone"
+    "categories": ["finance", "lifestyle", "productivity"],
+    "screenshots": [
+        {
+            "src": "/feature-dashboard.webp",
+            "sizes": "1280x720",
+            "type": "image/webp",
+            "platform": "wide",
+            "label": "Dashboard de planejamento financeiro"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Home",
+            "short_name": "Home",
+            "description": "Ir para página inicial",
+            "url": "/home",
+            "icons": [
+                {
+                    "src": "/android-chrome-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false,
+    "lang": "pt-BR",
+    "dir": "ltr"
 }

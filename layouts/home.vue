@@ -6,6 +6,9 @@
       <main class="px-2 md:!px-4 py-2 flex flex-col">
         <slot />
       </main>
+      
+      <!-- **PWA-01**: Banner de instalação PWA -->
+      <InstallPWABanner />
     </div>
   </div>
 </template>
